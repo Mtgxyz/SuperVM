@@ -110,6 +110,9 @@
 							</ScrollViewer>
 						</Grid>
 					</TabItem>
+					<TabItem Header="Output">
+						<TextBox VerticalContentAlignment="Top" Text="{Binding Path=Output}"/>
+					</TabItem>
 				</TabControl>
 			</Grid>
 			<TabControl>

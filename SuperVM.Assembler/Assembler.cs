@@ -107,6 +107,7 @@ namespace SuperVM.Assembler
 					}
 
 					var instruction = mnemonics[mnemonic];
+					instruction.Argument = argument;
 
 					foreach (var annotation in annotations)
 					{
@@ -207,6 +208,10 @@ namespace SuperVM.Assembler
 					code[patch.Key] =
 						(code[patch.Key] & 0xFFFFFFFF) |
 						((ulong)position << 32);
+
+					var i = instructions[patch.Key];
+					i.Argument = (uint)position;
+					instructions[patch.Key] = i;
 				}
 			}
 

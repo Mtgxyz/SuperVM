@@ -21,6 +21,7 @@ namespace SuperVM.VisualDebugger
 			{
 				Memory = new Memory(1024),
 			};
+			this.process.SysCall += Process_SysCall;
 
 			this.Source = "\tpush 12\n\tpush 30\n\tadd\n\tdrop";
 
@@ -28,10 +29,22 @@ namespace SuperVM.VisualDebugger
 
 			this.Reset();
 
-
 			this.StepCommand = new RelayCommand(this.Step);
 			this.ResetCommand = new RelayCommand(this.Reset);
 			this.RecompileCommand = new RelayCommand(this.Recompile);
+		}
+
+		private void Process_SysCall(object sender, Process.CommandExecutionEnvironment e)
+		{
+			switch(e.Additional)
+			{
+				case 1:
+				{
+					this.Output += Encoding.ASCII.GetString(new[] { (byte)e.Input0 });
+					this.OnPropertyChanged(nameof(Output));
+					break;
+				}
+			}
 		}
 
 		public void Recompile()
@@ -71,7 +84,7 @@ namespace SuperVM.VisualDebugger
 			this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public int CurrentSourceLine => this.assembly.OriginalLine[this.CodePointer] - 1;
+		public int CurrentSourceLine => (this.CodePointer < this.assembly.OriginalLine.Count) ? (this.assembly.OriginalLine[this.CodePointer] - 1) : -1;
 
 		public int StackPointer
 		{
@@ -109,6 +122,8 @@ namespace SuperVM.VisualDebugger
 			.ToArray();
 
 		public string Source { get; set; }
+
+		public string Output { get; set; }
 
 		public ICommand StepCommand { get; private set; }
 
