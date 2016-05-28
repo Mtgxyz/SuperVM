@@ -204,6 +204,9 @@ namespace SuperVM.Assembler
 				foreach (var patch in patches)
 				{
 					var target = patch.Value;
+					if (labels.ContainsKey(target) == false)
+						throw new InvalidOperationException($"Missing label: {target}");
+
 					var position = labels[target];
 					code[patch.Key] =
 						(code[patch.Key] & 0xFFFFFFFF) |

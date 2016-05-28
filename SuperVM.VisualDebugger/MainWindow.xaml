@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:SuperVM.VisualDebugger"
 		xmlns:avalon="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+		WindowStartupLocation="CenterScreen"
+        Title="MainWindow" Height="768" Width="1024">
 	<Window.DataContext>
 		<local:VirtualMachineModel />
 	</Window.DataContext>
@@ -125,7 +126,7 @@
 						AcceptsReturn="True"
 						FontFamily="Consolas"
 						VerticalContentAlignment="Top" 
-						Text="{Binding Path=Output}"/>
+						Text="{Binding Path=Output, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 				</TabItem>
 				<TabItem Header="Memory" Grid.IsSharedSizeScope="True">
 					<DockPanel>
@@ -164,6 +165,7 @@
 						FontFamily="Consolas"
 						Background="#222"
 						Foreground="#DDD"
+						FontSize="16"
 						Code="{Binding Path=Source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 				</TabItem>
 				<TabItem Header="Code">

@@ -172,7 +172,7 @@ namespace SuperVM.VisualDebugger
 		}
 
 		public StackItem[] Stack => Enumerable
-			.Range(0, (int)this.process.StackPointer)
+			.Range(1, (int)this.process.StackPointer)
 			.Select(i => new StackItem(i, this.process))
 			.ToArray();
 
