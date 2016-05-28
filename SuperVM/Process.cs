@@ -29,7 +29,7 @@ namespace SuperVM
 		{
 			checked
 			{
-				this.stack[this.StackPointer++] = value;
+				this.stack[++this.StackPointer] = value;
 			}
 		}
 
@@ -37,11 +37,11 @@ namespace SuperVM
 		{
 			checked
 			{
-				return this.stack[--this.StackPointer];
+				return this.stack[this.StackPointer--];
 			}
 		}
 
-		public uint Peek() => this.stack[this.StackPointer - 1];
+		public uint Peek() => this.stack[this.StackPointer];
 
 		public void Reset()
 		{

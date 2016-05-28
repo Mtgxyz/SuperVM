@@ -224,6 +224,8 @@ namespace SuperVM.VisualDebugger
 			this.mem = mem;
 			this.offset = offset;
 
+			this.Offset = Convert.ToString(this.offset, 16);
+
 			this.mem.Changed += Mem_Changed;
 		}
 
@@ -237,52 +239,58 @@ namespace SuperVM.VisualDebugger
 			}
 		}
 
-		public byte D0
+		private static string Read(byte val) => Convert.ToString(val, 16).ToUpper().PadLeft(2, '0');
+
+		private static byte Write(string val) => Convert.ToByte(val, 16);
+
+		public string Offset { get; private set; }
+
+		public string D0
 		{
-			get { return this.mem[this.offset + 0]; }
-			set { this.mem[this.offset + 0] = value; }
+			get { return Read(this.mem[this.offset + 0]); }
+			set { this.mem[this.offset + 0] = Write(value); }
 		}
 
-		public byte D1
+		public string D1
 		{
-			get { return this.mem[this.offset + 1]; }
-			set { this.mem[this.offset + 1] = value; }
+			get { return Read(this.mem[this.offset + 1]); }
+			set { this.mem[this.offset + 1] = Write(value); }
 		}
 
-		public byte D2
+		public string D2
 		{
-			get { return this.mem[this.offset + 2]; }
-			set { this.mem[this.offset + 2] = value; }
+			get { return Read(this.mem[this.offset + 2]); }
+			set { this.mem[this.offset + 2] = Write(value); }
 		}
 
-		public byte D3
+		public string D3
 		{
-			get { return this.mem[this.offset + 3]; }
-			set { this.mem[this.offset + 3] = value; }
+			get { return Read(this.mem[this.offset + 3]); }
+			set { this.mem[this.offset + 3] = Write(value); }
 		}
 
-		public byte D4
+		public string D4
 		{
-			get { return this.mem[this.offset + 4]; }
-			set { this.mem[this.offset + 4] = value; }
+			get { return Read(this.mem[this.offset + 4]); }
+			set { this.mem[this.offset + 4] = Write(value); }
 		}
 
-		public byte D5
+		public string D5
 		{
-			get { return this.mem[this.offset + 5]; }
-			set { this.mem[this.offset + 5] = value; }
+			get { return Read(this.mem[this.offset + 5]); }
+			set { this.mem[this.offset + 5] = Write(value); }
 		}
 
-		public byte D6
+		public string D6
 		{
-			get { return this.mem[this.offset + 6]; }
-			set { this.mem[this.offset + 6] = value; }
+			get { return Read(this.mem[this.offset + 6]); }
+			set { this.mem[this.offset + 6] = Write(value); }
 		}
 
-		public byte D7
+		public string D7
 		{
-			get { return this.mem[this.offset + 7]; }
-			set { this.mem[this.offset + 7] = value; }
+			get { return Read(this.mem[this.offset + 7]); }
+			set { this.mem[this.offset + 7] = Write(value); }
 		}
 	}
 }

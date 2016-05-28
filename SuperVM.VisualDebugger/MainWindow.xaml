@@ -45,7 +45,7 @@
 			</Button>
 		</ToolBar>
 		<DockPanel>
-			<TabControl DockPanel.Dock="Right" Width="235">
+			<TabControl DockPanel.Dock="Right" Width="251">
 				<TabItem Header="CPU State">
 					<Grid>
 						<Grid.RowDefinitions>
@@ -120,12 +120,29 @@
 					</Grid>
 				</TabItem>
 				<TabItem Header="Output">
-					<TextBox VerticalContentAlignment="Top" Text="{Binding Path=Output}"/>
+					<TextBox 
+						AcceptsTab="True"
+						AcceptsReturn="True"
+						FontFamily="Consolas"
+						VerticalContentAlignment="Top" 
+						Text="{Binding Path=Output}"/>
 				</TabItem>
 				<TabItem Header="Memory" Grid.IsSharedSizeScope="True">
 					<DockPanel>
 						<DataGrid ItemsSource="{Binding Path=Memory}" AutoGenerateColumns="False">
+							<DataGrid.Resources>
+								<Style TargetType="DataGridCell">
+									<Setter Property="FontFamily" Value="Consolas" />
+								</Style>
+							</DataGrid.Resources>
 							<DataGrid.Columns>
+								<DataGridTemplateColumn Header="" IsReadOnly="True" >
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate>
+											<TextBlock Margin="0" Foreground="Gray" TextAlignment="Right" Text="{Binding Path=Offset}"/>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+								</DataGridTemplateColumn>
 								<DataGridTextColumn Header="+0" Binding="{Binding Path=D0}" />
 								<DataGridTextColumn Header="+1" Binding="{Binding Path=D1}" />
 								<DataGridTextColumn Header="+2" Binding="{Binding Path=D2}" />
