@@ -98,6 +98,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <EmbeddedResource Include="Xshd\Assembler.xshd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SuperVM.Assembler\SuperVM.Assembler.csproj">

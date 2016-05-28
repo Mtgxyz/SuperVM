@@ -1,0 +1,89 @@
+﻿<SyntaxDefinition name="C#"
+        xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+	<Color name="Comment" foreground="PaleGreen" />
+	<Color name="String" foreground="Orange" />
+	<Color name="Label" foreground="HotPink" />
+	<Color name="LabelRef" foreground="PaleVioletRed" />
+	<Color name="Number" foreground="SkyBlue" />
+	<Color name="Attribute" foreground="YellowGreen" />
+	<Color name="Keyword" foreground="LightBlue" />
+
+	<!-- This is the main ruleset. -->
+	<RuleSet>
+		<Span color="Comment" begin=";" />
+
+		<Rule color="Label">
+			^\w+\:
+		</Rule>
+
+		<Span color="Attribute">
+			<Begin>\[</Begin>
+			<End>\]</End>
+		</Span>
+
+		<Span color="String">
+			<Begin>'</Begin>
+			<End>'</End>
+			<RuleSet>
+				<!-- nested span for escape sequences -->
+				<Span begin="\\" end="." />
+			</RuleSet>
+		</Span>
+
+		<Keywords fontWeight="bold" color="Keyword">
+			<Word>nop</Word>
+			<Word>push</Word>
+			<Word>drop</Word>
+			<Word>dup</Word>
+			<Word>jmp</Word>
+			<Word>jmpi</Word>
+			<Word>ret</Word>
+			<Word>load</Word>
+			<Word>loadi</Word>
+			<Word>store</Word>
+			<Word>storei</Word>
+			<Word>get</Word>
+			<Word>geti</Word>
+			<Word>set</Word>
+			<Word>seti</Word>
+			<Word>bpget</Word>
+			<Word>bpset</Word>
+			<Word>spget</Word>
+			<Word>spset</Word>
+			<Word>cpget</Word>
+			<Word>add</Word>
+			<Word>sub</Word>
+			<Word>cmp</Word>
+			<Word>mul</Word>
+			<Word>div</Word>
+			<Word>mod</Word>
+			<Word>and</Word>
+			<Word>or</Word>
+			<Word>xor</Word>
+			<Word>not</Word>
+			<Word>rol</Word>
+			<Word>ror</Word>
+			<Word>asl</Word>
+			<Word>asr</Word>
+			<Word>shl</Word>
+			<Word>shr</Word>
+			<Word>syscall</Word>
+			<Word>hwio</Word>
+		</Keywords>
+
+		<!-- Digits -->
+		<Rule color="Number">
+			\b0[xX][0-9a-fA-F]+  # hex number
+			|    \b
+			(    \d+(\.[0-9]+)?   #number with optional floating point
+			|    \.[0-9]+         #or just starting with floating point
+			)
+			([eE][+-]?[0-9]+)? # optional exponent
+		</Rule>
+
+		<Rule color="LabelRef">
+			\@\w+\b
+		</Rule>
+
+	</RuleSet>
+</SyntaxDefinition>

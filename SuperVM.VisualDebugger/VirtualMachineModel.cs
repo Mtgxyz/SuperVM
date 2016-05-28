@@ -30,7 +30,7 @@ namespace SuperVM.VisualDebugger
 			};
 			this.process.SysCall += Process_SysCall;
 
-			this.Source = "\tcpget\n\tjmp @main\n\tsyscall[ci: 0]\n; Here your code!\nmain:";
+			this.Source = "\tcpget\n\tjmp @main\n\tsyscall [ci: 0]\n; Here your code!\nmain:";
 
 			this.StepCommand = new RelayCommand(this.Step);
 			this.ResetCommand = new RelayCommand(this.Reset);

@@ -1,4 +1,6 @@
-﻿using ICSharpCode.AvalonEdit.Rendering;
+﻿using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 
 namespace SuperVM.VisualDebugger
 {
@@ -42,10 +45,15 @@ namespace SuperVM.VisualDebugger
 		public MainWindow()
 		{
 			InitializeComponent();
-			
+
 			BindingOperations.SetBinding(this, CurrentLineProperty, new Binding("CurrentSourceLine"));
 
 			this.codeEditor.TextArea.TextView.BackgroundRenderers.Add(this.renderer = new LineBackgroundRenderer(this));
+
+			using (XmlTextReader reader = new XmlTextReader(typeof(MainWindow).Assembly.GetManifestResourceStream("SuperVM.VisualDebugger.Xshd.Assembler.xshd")))
+			{
+				this.codeEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+			}
 		}
 
 		private void MainWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -62,7 +70,7 @@ namespace SuperVM.VisualDebugger
 
 			static LineBackgroundRenderer()
 			{
-				background = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0x00)); background.Freeze();
+				background = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)); background.Freeze();
 
 				var blackBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0)); blackBrush.Freeze();
 				pen = new Pen(blackBrush, 0.0);

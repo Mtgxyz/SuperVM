@@ -145,6 +145,8 @@
 						x:Name="codeEditor"
 						ShowLineNumbers="True"
 						FontFamily="Consolas"
+						Background="#222"
+						Foreground="#DDD"
 						Code="{Binding Path=Source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 				</TabItem>
 				<TabItem Header="Code">

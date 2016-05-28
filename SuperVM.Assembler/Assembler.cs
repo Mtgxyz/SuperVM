@@ -219,7 +219,7 @@ namespace SuperVM.Assembler
 		}
 
 
-		static Dictionary<string, Instruction> mnemonics = new Dictionary<string, Instruction>()
+		public static Dictionary<string, Instruction> mnemonics = new Dictionary<string, Instruction>()
 		{
 			{ "nop", new Instruction() { ExecutionZ = ExecutionMode.Always, ExecutionN = ExecutionMode.Always, Input0 = InputType.Zero, Input1 = InputType.Zero, Command = Command.Copy, CommandInfo = 0, ModifyFlags = false, Output = OutputType.Discard, Argument = 0,  } },
 			{ "push", new Instruction() { ExecutionZ = ExecutionMode.Always, ExecutionN = ExecutionMode.Always, Input0 = InputType.Argument, Input1 = InputType.Zero, Command = Command.Copy, CommandInfo = 0, ModifyFlags = false, Output = OutputType.Push, Argument = 0,  } },
