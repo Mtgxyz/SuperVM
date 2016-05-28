@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Input;
 using SuperVM.Assembler;
+using System.Timers;
+using System.Windows;
 
 namespace SuperVM.VisualDebugger
 {
@@ -14,31 +16,69 @@ namespace SuperVM.VisualDebugger
 
 		private Process process;
 		private VMAssembly assembly;
+		private Memory memory;
+		private readonly Timer timer;
 
 		public VirtualMachineModel()
 		{
+			this.memory = new Memory(1024);
+			this.memory.LoadString("Hallo Welt!", 33);
+
 			this.process = new Process()
 			{
-				Memory = new Memory(1024),
+				Memory = this.memory,
 			};
 			this.process.SysCall += Process_SysCall;
 
-			this.Source = "\tpush 12\n\tpush 30\n\tadd\n\tdrop";
-
-			this.Recompile();
-
-			this.Reset();
+			this.Source = "\tcpget\n\tjmp @main\n\tsyscall[ci: 0]\n; Here your code!\nmain:";
 
 			this.StepCommand = new RelayCommand(this.Step);
 			this.ResetCommand = new RelayCommand(this.Reset);
 			this.RecompileCommand = new RelayCommand(this.Recompile);
+			this.StartCommand = new RelayCommand(this.Start);
+			this.StartSlowCommand = new RelayCommand(this.StartSlow);
+			this.StopCommand = new RelayCommand(this.Stop);
+
+			this.timer = new Timer();
+			this.timer.Elapsed += Timer_Elapsed;
+
+			this.Recompile();
+
+			this.Reset();
+		}
+
+		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			this.Step();
+		}
+
+		private void Stop()
+		{
+			this.timer.Stop();
+		}
+
+		private void Start()
+		{
+			this.timer.Interval = 10.0;
+			this.timer.Start();
+		}
+
+		private void StartSlow()
+		{
+			this.timer.Interval = 100.0;
+			this.timer.Start();
 		}
 
 		private void Process_SysCall(object sender, Process.CommandExecutionEnvironment e)
 		{
-			switch(e.Additional)
+			switch (e.Additional)
 			{
-				case 1:
+				case 0: // Stop execution
+				{
+					this.Stop();
+					break;
+				}
+				case 1: // Print char
 				{
 					this.Output += Encoding.ASCII.GetString(new[] { (byte)e.Input0 });
 					this.OnPropertyChanged(nameof(Output));
@@ -49,22 +89,37 @@ namespace SuperVM.VisualDebugger
 
 		public void Recompile()
 		{
-			this.assembly = Assembler.Assembler.Assemble(this.Source);
-
-			this.process.Module = assembly.CreateModule();
-
+			this.Stop();
+			try
+			{
+				this.assembly = Assembler.Assembler.Assemble(this.Source);
+				this.process.Module = assembly.CreateModule();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "SuperVM Assembler", MessageBoxButton.OK, MessageBoxImage.Warning);
+			}
 			this.Reset();
 		}
 
 		public void Reset()
 		{
+			this.timer.Stop();
 			this.process.Reset();
 			this.OnVmChanged();
 		}
 
 		public void Step()
 		{
-			this.process.Step();
+			try
+			{
+				this.process.Step();
+			}
+			catch (Exception ex)
+			{
+				this.Stop();
+				MessageBox.Show(ex.Message, "SuperVM", MessageBoxButton.OK, MessageBoxImage.Warning);
+			}
 			this.OnVmChanged();
 		}
 
@@ -121,15 +176,21 @@ namespace SuperVM.VisualDebugger
 			.Select(i => new StackItem(i, this.process))
 			.ToArray();
 
+		public MemoryProxy[] Memory => Enumerable
+			.Range(0, this.memory.Size / 8)
+			.Select(i => new MemoryProxy(this.memory, (uint)(8 * i)))
+			.ToArray();
+
 		public string Source { get; set; }
 
 		public string Output { get; set; }
 
 		public ICommand StepCommand { get; private set; }
-
 		public ICommand ResetCommand { get; private set; }
-
 		public ICommand RecompileCommand { get; private set; }
+		public ICommand StartCommand { get; private set; }
+		public ICommand StopCommand { get; private set; }
+		public ICommand StartSlowCommand { get; private set; }
 	}
 
 	public class StackItem
@@ -148,6 +209,80 @@ namespace SuperVM.VisualDebugger
 		{
 			get { return (int)this.process.Stack[this.Index]; }
 			set { this.process.Stack[this.Index] = (uint)value; }
+		}
+	}
+
+	public class MemoryProxy : INotifyPropertyChanged
+	{
+		private readonly Memory mem;
+		private readonly uint offset;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public MemoryProxy(Memory mem, uint offset)
+		{
+			this.mem = mem;
+			this.offset = offset;
+
+			this.mem.Changed += Mem_Changed;
+		}
+
+		private void Mem_Changed(object sender, MemoryChangedEventArgs e)
+		{
+			var upper = this.offset + 7;
+			if (e.Address >= this.offset && (e.Address + e.Length) <= upper)
+			{
+				var idx = (e.Address - offset) % 8;
+				this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("D" + idx));
+			}
+		}
+
+		public byte D0
+		{
+			get { return this.mem[this.offset + 0]; }
+			set { this.mem[this.offset + 0] = value; }
+		}
+
+		public byte D1
+		{
+			get { return this.mem[this.offset + 1]; }
+			set { this.mem[this.offset + 1] = value; }
+		}
+
+		public byte D2
+		{
+			get { return this.mem[this.offset + 2]; }
+			set { this.mem[this.offset + 2] = value; }
+		}
+
+		public byte D3
+		{
+			get { return this.mem[this.offset + 3]; }
+			set { this.mem[this.offset + 3] = value; }
+		}
+
+		public byte D4
+		{
+			get { return this.mem[this.offset + 4]; }
+			set { this.mem[this.offset + 4] = value; }
+		}
+
+		public byte D5
+		{
+			get { return this.mem[this.offset + 5]; }
+			set { this.mem[this.offset + 5] = value; }
+		}
+
+		public byte D6
+		{
+			get { return this.mem[this.offset + 6]; }
+			set { this.mem[this.offset + 6] = value; }
+		}
+
+		public byte D7
+		{
+			get { return this.mem[this.offset + 7]; }
+			set { this.mem[this.offset + 7] = value; }
 		}
 	}
 }

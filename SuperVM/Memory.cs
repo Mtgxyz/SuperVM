@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Text;
 
 namespace SuperVM
 {
 	public class Memory
 	{
 		private readonly byte[] data;
+
+		public event EventHandler<MemoryChangedEventArgs> Changed;
 
 		public Memory(int size)
 		{
@@ -29,6 +32,7 @@ namespace SuperVM
 		public void SetUInt8(uint address, byte value)
 		{
 			this.data[address] = value;
+			this.Changed?.Invoke(this, new MemoryChangedEventArgs(address, 1));
 		}
 
 		public void SetUInt16(uint address, UInt16 value)
@@ -37,6 +41,7 @@ namespace SuperVM
 				BitConverter.GetBytes(value), 0,
 				this.data, address,
 				2);
+			this.Changed?.Invoke(this, new MemoryChangedEventArgs(address, 2));
 		}
 
 		public void SetUint32(uint address, UInt32 value)
@@ -45,12 +50,27 @@ namespace SuperVM
 				BitConverter.GetBytes(value), 0,
 				this.data, address,
 				4);
+			this.Changed?.Invoke(this, new MemoryChangedEventArgs(address, 4));
+		}
+
+		public void LoadString(string text, int start)
+		{
+			var bits = Encoding.ASCII.GetBytes(text);
+			for (int i = 0; i < bits.Length; i++)
+			{
+				this.data[start + i] = bits[i];
+			}
+			this.Changed?.Invoke(this, new MemoryChangedEventArgs((uint)start, (uint)bits.Length));
 		}
 
 		public byte this[uint address]
 		{
 			get { return this.data[address]; }
-			set { this.data[address] = value; }
+			set
+			{
+				this.data[address] = value;
+				this.Changed?.Invoke(this, new MemoryChangedEventArgs(address, 1));
+			}
 		}
 
 		public byte[] Raw => this.data;

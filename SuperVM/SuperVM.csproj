@@ -43,6 +43,7 @@
     <Compile Include="Enums.cs" />
     <Compile Include="Instruction.cs" />
     <Compile Include="Memory.cs" />
+    <Compile Include="MemoryChangedEventArgs.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Process.Commands.cs" />
     <Compile Include="Process.cs" />

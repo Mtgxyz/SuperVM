@@ -27,6 +27,16 @@
 				<Path Data="F1 M 38,22.1667L 58.5832,37.6043L 58.5832,38.7918L 38,53.8333L 38,22.1667 Z M 33.25,22.1667L 33.25,53.8333L 26.9167,53.8333L 26.9167,22.1667L 33.25,22.1667 Z "/>
 			</Button>
 			<Separator />
+			<Button ToolTip="Start" Command="{Binding Path=StartCommand}">
+				<Path Data="F1 M 30.0833,22.1667L 50.6665,37.6043L 50.6665,38.7918L 30.0833,53.8333L 30.0833,22.1667 Z "/>
+			</Button>
+			<Button ToolTip="Start Slow" Command="{Binding Path=StartSlowCommand}">
+				<Path Data="F1 M 44.3333,45.9167L 53.8333,54.625L 44.3333,63.3333L 44.3333,45.9167 Z M 52.25,39.5833C 52.25,42.2298 51.6007,44.7245 50.4528,46.917L 47.3572,44.2084C 47.762,43.2521 48.0451,42.2317 48.187,41.1667L 44.3333,41.1667L 44.3333,38L 48.187,38C 47.4819,32.7082 43.2918,28.5181 38,27.813L 38,31.6667L 34.8333,31.6667L 34.8333,27.813C 29.5415,28.5181 25.3513,32.7082 24.6463,38L 28.5,38.0001L 28.5,41.1667L 24.6463,41.1667C 25.3513,46.4585 29.5415,50.6487 34.8333,51.3537L 34.8333,47.5L 38,47.5L 38,51.3537C 39.1115,51.2056 40.5703,50.9038 41.5625,50.4702L 41.5625,54.6918C 40.063,55.1628 38.0716,55.4167 36.4167,55.4167C 27.6721,55.4167 20.5833,48.3279 20.5833,39.5833C 20.5833,31.3732 26.8322,24.6226 34.8333,23.8282L 34.8333,22.1667L 30.0833,22.1667L 30.0833,17.4167L 42.75,17.4167L 42.75,22.1667L 38,22.1667L 38,23.8282C 41.1844,24.1444 44.0913,25.404 46.4371,27.3237L 47.5796,26.1813L 45.3404,23.9421L 48.6991,20.5833L 55.4167,27.3009L 52.0579,30.6596L 49.8187,28.4204L 48.6763,29.5629C 50.9099,32.2923 52.25,35.7813 52.25,39.5833 Z M 36.4166,36.4167C 38.1655,36.4167 39.5833,37.8345 39.5833,39.5834C 39.5833,41.3323 38.1655,42.75 36.4166,42.75L 30.0833,47.5L 33.2499,39.5834C 33.2499,37.8345 34.6677,36.4167 36.4166,36.4167 Z "/>
+			</Button>
+			<Button ToolTip="Stop" Command="{Binding Path=StopCommand}">
+				<Path Data="F1 M 26.9167,23.75L 33.25,23.75L 33.25,52.25L 26.9167,52.25L 26.9167,23.75 Z M 42.75,23.75L 49.0833,23.75L 49.0833,52.25L 42.75,52.25L 42.75,23.75 Z "/>
+			</Button>
+			<Separator />
 			<Button ToolTip="Reset" Command="{Binding Path=ResetCommand}">
 				<Path Data="F1 M 52,24L 52,52L 47,52L 47,43C 47,38.0295 42.9706,34 38,34L 37,34L 37,30L 30.25,36.5L 37,43L 37,39L 38,39C 40.2091,39 42,40.7909 42,43L 42,52L 24,52L 24,24L 52,24 Z "/>
 			</Button>
@@ -35,91 +45,106 @@
 			</Button>
 		</ToolBar>
 		<DockPanel>
-			<Grid DockPanel.Dock="Right" Width="200">
-				<TabControl>
-					<TabItem Header="CPU State">
-						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="Auto" />
-								<RowDefinition Height="*" />
-							</Grid.RowDefinitions>
+			<TabControl DockPanel.Dock="Right" Width="235">
+				<TabItem Header="CPU State">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.Resources>
+							<Style TargetType="TextBox">
+								<Setter Property="VerticalContentAlignment" Value="Center" />
+							</Style>
+							<Style TargetType="CheckBox">
+								<Setter Property="VerticalContentAlignment" Value="Center" />
+							</Style>
+						</Grid.Resources>
+
+						<Label Grid.Row="0" Grid.Column="0" Content="Stack Pointer" />
+						<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=StackPointer, UpdateSourceTrigger=PropertyChanged}"/>
+
+						<Label Grid.Row="1" Grid.Column="0" Content="Base Pointer" />
+						<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=BasePointer, UpdateSourceTrigger=PropertyChanged}"/>
+
+						<Label Grid.Row="2" Grid.Column="0" Content="Code Pointer" />
+						<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=CodePointer, UpdateSourceTrigger=PropertyChanged}"/>
+
+						<Label Grid.Row="3" Grid.Column="0" Content="Flags" />
+						<Grid Grid.Row="3" Grid.Column="1">
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
-							<Grid.Resources>
-								<Style TargetType="TextBox">
-									<Setter Property="VerticalContentAlignment" Value="Center" />
-								</Style>
-								<Style TargetType="CheckBox">
-									<Setter Property="VerticalContentAlignment" Value="Center" />
-								</Style>
-							</Grid.Resources>
-
-							<Label Grid.Row="0" Grid.Column="0" Content="Stack Pointer" />
-							<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=StackPointer, UpdateSourceTrigger=PropertyChanged}"/>
-
-							<Label Grid.Row="1" Grid.Column="0" Content="Base Pointer" />
-							<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=BasePointer, UpdateSourceTrigger=PropertyChanged}"/>
-
-							<Label Grid.Row="2" Grid.Column="0" Content="Code Pointer" />
-							<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=CodePointer, UpdateSourceTrigger=PropertyChanged}"/>
-
-							<Label Grid.Row="3" Grid.Column="0" Content="Flags" />
-							<Grid Grid.Row="3" Grid.Column="1">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*" />
-									<ColumnDefinition Width="*" />
-								</Grid.ColumnDefinitions>
-								<CheckBox Grid.Column="0" IsChecked="{Binding Path=FlagZ}" Content="Z"/>
-								<CheckBox Grid.Column="1" IsChecked="{Binding Path=FlagN}" Content="N"/>
-							</Grid>
-
-							<Label Grid.Row="4" Grid.Column="0" Content="Stack:" />
-							<ScrollViewer Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
-								<ItemsControl Grid.IsSharedSizeScope="True" ItemsSource="{Binding Path=Stack}">
-									<ItemsControl.ItemsPanel>
-										<ItemsPanelTemplate>
-											<StackPanel Orientation="Vertical" />
-										</ItemsPanelTemplate>
-									</ItemsControl.ItemsPanel>
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<DataTemplate.Resources>
-												<Style TargetType="TextBlock" >
-													<Setter Property="Margin" Value="4,2" />
-												</Style>
-											</DataTemplate.Resources>
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="Auto" SharedSizeGroup="A" />
-													<ColumnDefinition Width="1" />
-													<ColumnDefinition Width="*" />
-												</Grid.ColumnDefinitions>
-												<TextBlock Grid.Column="0" Text="{Binding Path=Index}" />
-												<Border Grid.Column="1" Background="Black" />
-												<TextBox Grid.Column="2" HorizontalContentAlignment="Right" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
-											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</ScrollViewer>
+							<CheckBox Grid.Column="0" IsChecked="{Binding Path=FlagZ}" Content="Z"/>
+							<CheckBox Grid.Column="1" IsChecked="{Binding Path=FlagN}" Content="N"/>
 						</Grid>
-					</TabItem>
-					<TabItem Header="Output">
-						<TextBox VerticalContentAlignment="Top" Text="{Binding Path=Output}"/>
-					</TabItem>
-				</TabControl>
-			</Grid>
+
+						<Label Grid.Row="4" Grid.Column="0" Content="Stack:" />
+						<ScrollViewer Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
+							<ItemsControl Grid.IsSharedSizeScope="True" ItemsSource="{Binding Path=Stack}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel Orientation="Vertical" />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<DataTemplate.Resources>
+											<Style TargetType="TextBlock" >
+												<Setter Property="Margin" Value="4,2" />
+											</Style>
+										</DataTemplate.Resources>
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" SharedSizeGroup="A" />
+												<ColumnDefinition Width="1" />
+												<ColumnDefinition Width="*" />
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" Text="{Binding Path=Index}" />
+											<Border Grid.Column="1" Background="Black" />
+											<TextBox Grid.Column="2" HorizontalContentAlignment="Right" Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+				<TabItem Header="Output">
+					<TextBox VerticalContentAlignment="Top" Text="{Binding Path=Output}"/>
+				</TabItem>
+				<TabItem Header="Memory" Grid.IsSharedSizeScope="True">
+					<DockPanel>
+						<DataGrid ItemsSource="{Binding Path=Memory}" AutoGenerateColumns="False">
+							<DataGrid.Columns>
+								<DataGridTextColumn Header="+0" Binding="{Binding Path=D0}" />
+								<DataGridTextColumn Header="+1" Binding="{Binding Path=D1}" />
+								<DataGridTextColumn Header="+2" Binding="{Binding Path=D2}" />
+								<DataGridTextColumn Header="+3" Binding="{Binding Path=D3}" />
+								<DataGridTextColumn Header="+4" Binding="{Binding Path=D4}" />
+								<DataGridTextColumn Header="+5" Binding="{Binding Path=D5}" />
+								<DataGridTextColumn Header="+6" Binding="{Binding Path=D6}" />
+								<DataGridTextColumn Header="+7" Binding="{Binding Path=D7}" />
+							</DataGrid.Columns>
+						</DataGrid>
+					</DockPanel>
+				</TabItem>
+			</TabControl>
 			<TabControl>
 				<TabItem Header="Assembler">
 					<local:CodeEditor 
 						x:Name="codeEditor"
 						ShowLineNumbers="True"
+						FontFamily="Consolas"
 						Code="{Binding Path=Source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 				</TabItem>
 				<TabItem Header="Code">
