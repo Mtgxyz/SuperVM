@@ -7,6 +7,8 @@ using System.Windows.Input;
 using SuperVM.Assembler;
 using System.Timers;
 using System.Windows;
+using Microsoft.Win32;
+using System.IO;
 
 namespace SuperVM.VisualDebugger
 {
@@ -18,6 +20,8 @@ namespace SuperVM.VisualDebugger
 		private VMAssembly assembly;
 		private Memory memory;
 		private readonly Timer timer;
+		private bool appendBootstrap = true;
+		private bool insertDebugNewlines = false;
 
 		public VirtualMachineModel()
 		{
@@ -39,12 +43,48 @@ namespace SuperVM.VisualDebugger
 			this.StartSlowCommand = new RelayCommand(this.StartSlow);
 			this.StopCommand = new RelayCommand(this.Stop);
 
+			this.LoadFromClipboardCommand = new RelayCommand(this.LoadFromClipboard);
+			this.LoadFromFileCommand = new RelayCommand(this.LoadFromFile);
+
 			this.timer = new Timer();
 			this.timer.Elapsed += Timer_Elapsed;
 
 			this.Recompile();
 
 			this.Reset();
+		}
+
+		private void LoadFromFile()
+		{
+			var ofd = new OpenFileDialog()
+			{
+				Filter = "All Files (*.*)|*.*",
+				Title = "Load Assembler Source...",
+				AddExtension = false,
+			};
+			if (ofd.ShowDialog(App.Current.MainWindow) != true)
+				return;
+			var source = File.ReadAllText(ofd.FileName);
+			LoadSource(source);
+		}
+
+		private void LoadFromClipboard()
+		{
+			if (Clipboard.ContainsText(TextDataFormat.UnicodeText) == false)
+				return;
+			this.LoadSource(Clipboard.GetText(TextDataFormat.UnicodeText));
+		}
+
+		private void LoadSource(string source)
+		{
+			this.Source = source;
+			if (this.appendBootstrap)
+			{
+				this.Source = "\tcpget\n\tjmp @main\n\tsyscall [ci: 0]\n" + this.Source;
+			}
+			OnPropertyChanged(nameof(Source));
+
+			this.Recompile();
 		}
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -71,16 +111,25 @@ namespace SuperVM.VisualDebugger
 
 		private void Process_SysCall(object sender, Process.CommandExecutionEnvironment e)
 		{
+			var appendix = "";
+			if (this.insertDebugNewlines)
+				appendix = "\n";
 			switch (e.Additional)
 			{
 				case 0: // Stop execution
 				{
-					this.Stop();
+					this.Reset();
 					break;
 				}
 				case 1: // Print char
 				{
-					this.Output += Encoding.ASCII.GetString(new[] { (byte)e.Input0 });
+					this.Output += Encoding.ASCII.GetString(new[] { (byte)e.Input0 }) + appendix;
+					this.OnPropertyChanged(nameof(Output));
+					break;
+				}
+				case 2: // Print Numeric
+				{
+					this.Output += e.Input0.ToString() + appendix;
 					this.OnPropertyChanged(nameof(Output));
 					break;
 				}
@@ -104,7 +153,7 @@ namespace SuperVM.VisualDebugger
 
 		public void Reset()
 		{
-			this.timer.Stop();
+			this.Stop();
 			this.process.Reset();
 			this.OnVmChanged();
 		}
@@ -185,12 +234,34 @@ namespace SuperVM.VisualDebugger
 
 		public string Output { get; set; }
 
+		public bool AppendBootstrap
+		{
+			get { return this.appendBootstrap; }
+			set
+			{
+				this.appendBootstrap = value;
+				OnPropertyChanged(nameof(AppendBootstrap));
+			}
+		}
+
+		public bool InsertDebugNewlines
+		{
+			get { return this.insertDebugNewlines; }
+			set
+			{
+				this.insertDebugNewlines = value;
+				OnPropertyChanged(nameof(InsertDebugNewlines));
+			}
+		}
+
 		public ICommand StepCommand { get; private set; }
 		public ICommand ResetCommand { get; private set; }
 		public ICommand RecompileCommand { get; private set; }
 		public ICommand StartCommand { get; private set; }
 		public ICommand StopCommand { get; private set; }
 		public ICommand StartSlowCommand { get; private set; }
+		public ICommand LoadFromClipboardCommand { get; private set; }
+		public ICommand LoadFromFileCommand { get; private set; }
 	}
 
 	public class StackItem
