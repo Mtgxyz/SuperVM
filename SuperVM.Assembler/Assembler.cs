@@ -181,17 +181,7 @@ namespace SuperVM.Assembler
 						}
 					}
 
-					ulong encoded = 0;
-
-					encoded |= ((uint)(instruction.ExecutionZ) << 0);
-					encoded |= ((uint)(instruction.ExecutionN) << 2);
-					encoded |= ((uint)(instruction.Input0) << 4);
-					encoded |= ((uint)(instruction.Input1) << 6);
-					encoded |= ((uint)(instruction.Command) << 7);
-					encoded |= ((uint)(instruction.CommandInfo) << 13);
-					encoded |= ((uint)(instruction.ModifyFlags ? 1 : 0) << 29);
-					encoded |= ((uint)(instruction.Output) << 30);
-					encoded |= ((ulong)argument << 32);
+					ulong encoded = instruction.Encode();
 
 					code.Add(encoded);
 					instructions.Add(instruction);

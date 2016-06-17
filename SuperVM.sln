@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperVM", "SuperVM\SuperVM.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperVM.Assembler", "SuperVM.Assembler\SuperVM.Assembler.csproj", "{A84B2773-0EB8-4F3A-B342-68DDD9BD675E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperVM.ExperimentalHost", "SuperVM.ExperimentalHost\SuperVM.ExperimentalHost.csproj", "{4FE5C136-C634-4EC5-A373-13B1A18A3A2B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A84B2773-0EB8-4F3A-B342-68DDD9BD675E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A84B2773-0EB8-4F3A-B342-68DDD9BD675E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A84B2773-0EB8-4F3A-B342-68DDD9BD675E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FE5C136-C634-4EC5-A373-13B1A18A3A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FE5C136-C634-4EC5-A373-13B1A18A3A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FE5C136-C634-4EC5-A373-13B1A18A3A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FE5C136-C634-4EC5-A373-13B1A18A3A2B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

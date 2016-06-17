@@ -8,6 +8,12 @@ namespace SuperVM
 {
 	partial class Process
 	{
+		public Process(Module module, Memory memory)
+		{
+			this.Module = module;
+			this.Memory = memory;
+		}
+
 		private static class Cmd
 		{
 

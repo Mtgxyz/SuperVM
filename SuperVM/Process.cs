@@ -167,7 +167,7 @@ namespace SuperVM
 
 		public Module Module { get; set; }
 
-		public Memory Memory { get; set; }
+		public Memory Memory { get; set; } = new Memory(16384);
 
 		public uint CodePointer { get; set; }
 		public uint StackPointer { get; set; }
@@ -189,12 +189,34 @@ namespace SuperVM
 				this.Process = process;
 			}
 
+			/// <summary>
+			/// First input value
+			/// </summary>
 			public uint Input0 { get; set; }
+
+			/// <summary>
+			/// Second input value
+			/// </summary>
 			public uint Input1 { get; set; }
+
+			/// <summary>
+			/// The command argument
+			/// </summary>
 			public uint Argument { get; set; }
+
+			/// <summary>
+			/// The command info
+			/// </summary>
 			public uint Additional { get; set; }
+
+			/// <summary>
+			/// The output of the command.
+			/// </summary>
 			public uint Output { get; set; }
 
+			/// <summary>
+			/// The executing process.
+			/// </summary>
 			public Process Process { get; private set; }
 		}
 	}
