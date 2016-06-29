@@ -1,10 +1,13 @@
 
 CC = gcc
 
-all: exp
+all: explink expdump
 
-exp: exp.c
-	$(CC) -g exp.c -o exp
+explink: explink.c
+	$(CC) -g $^ -o explink
+
+expdump: expdump.c
+	$(CC) -g $^ -o expdump
 
 test: exp
 	./exp -o test.exp $(ARGS)

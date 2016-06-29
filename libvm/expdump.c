@@ -162,8 +162,8 @@ void disassemble(Instruction *list, uint32_t count, uint32_t base, FILE *f)
 		{
 		case VM_INPUT_ZERO: if (v) fprintf(f, "[i1:zero] "); break;
 		case VM_INPUT_POP: fprintf(f, "[i1:pop] "); break;
-		case VM_INPUT_PEEK: fprintf(f, "[i1:peek] "); break;
-		case VM_INPUT_ARG: fprintf(f, "[i1:arg] "); break;
+		// case VM_INPUT_PEEK: fprintf(f, "[i1:peek] "); break;
+		// case VM_INPUT_ARG: fprintf(f, "[i1:arg] "); break;
 		}
 
 		if (instr.command <= 12)
@@ -207,16 +207,18 @@ int main(int argc, char **argv)
 {
 	opterr = 0;
 
+	int headers = 0;
 	int dumpSections = 0;
 	int dumpMetas = 0;
 
 	int disassembleSections = 0;
 
 	int c;
-	while ((c = getopt(argc, argv, "smdD")) != -1)
+	while ((c = getopt(argc, argv, "HsmdD")) != -1)
 	{
 		switch (c)
 		{
+		case 'H': headers = 1; break;
 		case 's': dumpSections = 1; break;
 		case 'm': dumpMetas = 1; break;
 		case 'D': disassembleVerbose = 1;
@@ -267,15 +269,18 @@ int main(int argc, char **argv)
 			continue;
 		}
 
-		// We should be sane now...
-		fprintf(stdout, "EXP FILE %s\n", fileName);
-		fprintf(stdout, "Version:  %d.%d\n", fileHeader.majorVersion, fileHeader.minorVersion);
-		fprintf(stdout, "Sections: %d\n", fileHeader.numSections);
-		fprintf(stdout, "Metas:    %d\n", fileHeader.numMeta);
-
-		if (dumpSections)
+		if(headers)
 		{
-			fprintf(stdout, "Sections:\n");
+			// We should be sane now...
+			fprintf(stdout, "EXP FILE %s\n", fileName);
+			fprintf(stdout, "Version:  %d.%d\n", fileHeader.majorVersion, fileHeader.minorVersion);
+			fprintf(stdout, "Sections: %d\n", fileHeader.numSections);
+			fprintf(stdout, "Metas:    %d\n", fileHeader.numMeta);
+		}
+		
+		if (dumpSections || disassembleSections)
+		{
+			if(dumpSections) fprintf(stdout, "Sections:\n");
 
 			for (int i = 0; i < fileHeader.numSections; i++)
 			{
@@ -283,18 +288,22 @@ int main(int argc, char **argv)
 
 				fseek(f, fileHeader.posSections + i * sizeof(expsection_t), SEEK_SET);
 				fread(&section, 1, sizeof(expsection_t), f);
-
-				fprintf(stdout, " Section #%d\n", i);
-				fprintf(stdout, "  Name:  %s\n", section.name);
-				fprintf(stdout, "  Type:  %s\n", (section.type ? "Data" : "Code"));
-				fprintf(stdout, "  Base:  0x%X\n", section.base);
-				fprintf(stdout, "  Start: %d\n", section.start);
-				fprintf(stdout, "  Size:  %d\n", section.length);
-				
+				if(dumpSections)
+				{
+					fprintf(stdout, " Section #%d\n", i);
+					fprintf(stdout, "  Name:  %s\n", section.name);
+					fprintf(stdout, "  Type:  %s\n", (section.type ? "Data" : "Code"));
+					fprintf(stdout, "  Base:  0x%X\n", section.base);
+					fprintf(stdout, "  Start: %d\n", section.start);
+					fprintf(stdout, "  Size:  %d\n", section.length);
+				}	
 				// Call disassembler
 				if (disassembleSections && section.type == 0)
 				{
-					fprintf(stdout, "  Disassembly:\n");
+					if(dumpSections)
+						fprintf(stdout, "  Disassembly:\n");
+					else
+						fprintf(stdout, "; Section '%s'@0x%08X\n", section.name, section.base);
 
 					Instruction *buffer = malloc(section.length);
 
