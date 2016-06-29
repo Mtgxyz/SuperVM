@@ -6,12 +6,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using static System.Console;
+
 namespace SuperVM.Assembler
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
+			// GenerateDisassemblerListingsForC();
+
 			if (args.Contains("-gen-code"))
 			{
 				MnemonicParser.GenerateFromDocumentation(
@@ -44,6 +48,77 @@ namespace SuperVM.Assembler
 						fs.Write(bits, 0, bits.Length);
 					}
 				}
+			}
+		}
+
+		private static void GenerateDisassemblerListingsForC()
+		{
+			foreach (var mnemonic in Assembler.mnemonics)
+			{
+				var i = mnemonic.Value;
+
+				Write("{{ \"{0}\", {{ ", mnemonic.Key);
+
+				switch (i.ExecutionZ)
+				{
+					case ExecutionMode.Always: Write("VM_EXEC_X, "); break;
+					case ExecutionMode.Zero: Write("VM_EXEC_0, "); break;
+					case ExecutionMode.One: Write("VM_EXEC_1, "); break;
+				}
+				switch (i.ExecutionN)
+				{
+					case ExecutionMode.Always: Write("VM_EXEC_X, "); break;
+					case ExecutionMode.Zero: Write("VM_EXEC_0, "); break;
+					case ExecutionMode.One: Write("VM_EXEC_1, "); break;
+				}
+				switch (i.Input0)
+				{
+					case InputType.Zero: Write("VM_INPUT_ZERO, "); break;
+					case InputType.Pop: Write("VM_INPUT_POP, "); break;
+					case InputType.Peek: Write("VM_INPUT_PEEK, "); break;
+					case InputType.Argument: Write("VM_INPUT_ARG, "); break;
+				}
+				switch (i.Input1)
+				{
+					case InputType.Zero: Write("VM_INPUT_ZERO, "); break;
+					case InputType.Pop: Write("VM_INPUT_POP, "); break;
+					case InputType.Peek: Write("VM_INPUT_PEEK, "); break;
+					case InputType.Argument: Write("VM_INPUT_ARG, "); break;
+				}
+				switch (i.Command)
+				{
+					case Command.Copy: Write("VM_CMD_COPY, "); break;
+					case Command.Store: Write("VM_CMD_STORE, "); break;
+					case Command.Load: Write("VM_CMD_LOAD, "); break;
+					case Command.Get: Write("VM_CMD_GET, "); break;
+					case Command.Set: Write("VM_CMD_SET, "); break;
+					case Command.BpGet: Write("VM_CMD_BPGET, "); break;
+					case Command.BpSet: Write("VM_CMD_BPSET, "); break;
+					case Command.CpGet: Write("VM_CMD_CPGET, "); break;
+					case Command.Math: Write("VM_CMD_MATH, "); break;
+					case Command.SpGet: Write("VM_CMD_SPGET, "); break;
+					case Command.SpSet: Write("VM_CMD_SPSET, "); break;
+					case Command.SysCall: Write("VM_CMD_SYSCALL, "); break;
+					case Command.HwIO: Write("VM_CMD_HWIO, "); break;
+				}
+
+				Write("{0}, ", i.CommandInfo);
+
+				switch (i.ModifyFlags)
+				{
+					case false: Write("VM_FLAG_NO, "); break;
+					case true: Write("VM_FLAG_YES, "); break;
+				}
+
+				switch (i.Output)
+				{
+					case OutputType.Discard: Write("VM_OUTPUT_DISCARD"); break;
+					case OutputType.Push: Write("VM_OUTPUT_PUSH"); break;
+					case OutputType.Jump: Write("VM_OUTPUT_JUMP"); break;
+					case OutputType.JumpRelative: Write("VM_OUTPUT_JUMPR"); break;
+				}
+
+				Console.WriteLine("} },");
 			}
 		}
 
