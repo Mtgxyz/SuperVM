@@ -103,14 +103,14 @@ const char *commandStrings[] =
 
 int disassembleVerbose = 0;
 
-void disassemble(Instruction *list, uint32_t count, FILE *f)
+void disassemble(Instruction *list, uint32_t count, uint32_t base, FILE *f)
 {
 	int v = disassembleVerbose;
 	for (int i = 0; i < count; i++)
 	{
 		Instruction instr = list[i];
 
-		fprintf(f, "%8X:  ", i);
+		fprintf(f, "%8X:  ", base + i);
 
 		struct PredefinedCmd *knownInstruction = NULL;
 
@@ -287,9 +287,10 @@ int main(int argc, char **argv)
 				fprintf(stdout, " Section #%d\n", i);
 				fprintf(stdout, "  Name:  %s\n", section.name);
 				fprintf(stdout, "  Type:  %s\n", (section.type ? "Data" : "Code"));
+				fprintf(stdout, "  Base:  0x%X\n", section.base);
 				fprintf(stdout, "  Start: %d\n", section.start);
 				fprintf(stdout, "  Size:  %d\n", section.length);
-
+				
 				// Call disassembler
 				if (disassembleSections && section.type == 0)
 				{
@@ -305,6 +306,7 @@ int main(int argc, char **argv)
 					disassemble(
 						buffer,
 						section.length / sizeof(Instruction),
+						section.base,
 						stdout);
 
 					free(buffer);

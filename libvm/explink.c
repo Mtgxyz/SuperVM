@@ -97,10 +97,10 @@ int main(int argc, char **argv)
 
 	DEBUG_VAL(fileHeader.posSections);
 
-	expsection_t codeSection = { 0 };
+	expsection_t codeSection = { 0, 0 };
 	strcpy(codeSection.name, ".code");
 
-	expsection_t dataSection = { 1 };
+	expsection_t dataSection = { 1, 0 };
 	strcpy(dataSection.name, ".data");
 
 	if (codefileName != NULL)

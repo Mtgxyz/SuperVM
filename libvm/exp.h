@@ -24,6 +24,7 @@ struct expfile
 struct expsection
 {
 	uint32_t type;     // Type of the section: 0 = code, 1 = data
+	uint32_t base;     // Base address of the section in memory.
 	uint32_t start;    // File pointer to the begin of the section
 	uint32_t length;   // Length of the section in bytes
 	char     name[64]; // Name of the section, null terminated c-string
