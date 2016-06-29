@@ -3,12 +3,11 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-#if defined(__gcc)
-#define PACKED __attribute__ ((packed))
+#if defined(_MSC_VER)
+#define VM_PACKED_STRUCT
 #else
-#define PACKED
+#define VM_PACKED_STRUCT __attribute__ ((packed))
 #endif
-
 
 #if defined(__cplusplus)
 extern "C" {
@@ -86,10 +85,10 @@ struct instruction
 	unsigned int flags : 1;
 	unsigned int output : 2;
 	uint32_t     argument;
-} PACKED ;
+} VM_PACKED_STRUCT ;
 
-static_assert(sizeof(Instruction) == 8, "Instruction must be 8 bytes large.");
-static_assert(offsetof(Instruction, argument) == 4, "Argument must be  must be 8 bytes large.");
+static_assert(sizeof(struct instruction) == 8, "Instruction must be 8 bytes large.");
+static_assert(offsetof(struct instruction, argument) == 4, "Argument must be  must be 8 bytes large.");
 
 struct spu
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#if defined(__gcc)
-#define PACKED __attribute__ ((packed))
+#if defined(_MSC_VER)
+#define EXP_PACKED_STRUCT
 #else
-#define PACKED
+#define EXP_PACKED_STRUCT __attribute__ ((packed))
 #endif
 
 #include <stdint.h>
@@ -19,7 +19,7 @@ struct expfile
 	uint32_t numSections;  // Number of sections
 	uint32_t posMeta;      // File pointer of first metadata entry
 	uint32_t posSections;  // File pointer of first section definition;
-} PACKED;
+} EXP_PACKED_STRUCT;
 
 struct expsection
 {
@@ -28,13 +28,13 @@ struct expsection
 	uint32_t start;    // File pointer to the begin of the section
 	uint32_t length;   // Length of the section in bytes
 	char     name[64]; // Name of the section, null terminated c-string
-} PACKED;
+} EXP_PACKED_STRUCT;
 
 struct expstring
 {
 	uint32_t start;    // File pointer to the start of the string
 	uint32_t length;   // Length of the string in bytes.
-} PACKED;
+} EXP_PACKED_STRUCT;
 
 struct expmeta
 {
@@ -45,7 +45,7 @@ struct expmeta
 		int32_t   i; // int32_t
 		struct expstring s; // ExpString
 	} value;       // Value of the metadata
-} PACKED;
+} EXP_PACKED_STRUCT;
 
 typedef struct expfile expfile_t;
 typedef struct expsection expsection_t;
