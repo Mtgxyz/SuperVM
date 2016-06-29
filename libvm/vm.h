@@ -75,7 +75,7 @@ extern "C" {
 #define VM_FLAG_Z (1<<0)
 #define VM_FLAG_N (1<<1)
 
-typedef struct
+struct instruction
 {
 	unsigned int execZ : 2;
 	unsigned int execN : 2;
@@ -86,48 +86,39 @@ typedef struct
 	unsigned int flags : 1;
 	unsigned int output : 2;
 	uint32_t     argument;
-} PACKED Instruction;
+} PACKED ;
 
 static_assert(sizeof(Instruction) == 8, "Instruction must be 8 bytes large.");
 static_assert(offsetof(Instruction, argument) == 4, "Argument must be  must be 8 bytes large.");
 
-typedef struct
+struct spu
 {
-	Instruction *code;
-	uint32_t length;
-} Module;
+	struct instruction *code;            // Pointer to the first instruction
+	uint32_t codeLength;          // length of the code in instructions
 
-typedef struct
+	uint32_t codePointer;         // code pointer register
+	uint32_t stackPointer;        // stack pointer register
+	uint32_t basePointer;         // base pointer register
+	uint32_t flags;               // flag register
+	
+	uint32_t memoryBase;          // Linear start address of the memory.
+	void *memory;                 // Point to the base linear address
+	uint32_t memorySize;          // Size of the memory in bytes.
+
+	uint32_t stack[VM_STACKSIZE]; // The stack of the SPU.
+};
+
+struct cmdinput
 {
-	uint32_t pageSize;
-	uint32_t length;
-	uint8_t **pages;
-} VirtualMemoryMap;
+	uint32_t input0; // first input argument
+	uint32_t input1; // second input argument
+	uint32_t info;   // command info
+};
 
-typedef struct
-{
-	Module *module;
-	void *tag;
+typedef struct instruction instruction_t;
+typedef struct spu spu_t;
+typedef struct cmdinput cmdinput_t;
 
-	uint32_t codePointer;
-	uint32_t stackPointer;
-	uint32_t basePointer;
-	uint32_t flags;
-
-	uint32_t stack[VM_STACKSIZE];
-
-	VirtualMemoryMap mmap;
-} Process;
-
-typedef struct
-{
-	uint32_t input0;
-	uint32_t input1;
-	uint32_t argument;
-	uint32_t additional;
-
-	uint32_t output;
-} CommandInfo;
 
 /**
 * @brief Steps a given process.
@@ -137,36 +128,36 @@ typedef struct
 * @param process The process to be stepped.
 * @returns 1 if the process is still running or 0 if the process is terminated.
 */
-int vm_step_process(Process *process);
+int vm_step_process(spu_t *process);
 
 /**
 * @brief Pushes a value onto the process' stack.
 */
-void vm_push(Process *process, uint32_t value);
+void vm_push(spu_t *process, uint32_t value);
 
 /**
 * @brief Pops a value from the process' stack.
 */
-uint32_t vm_pop(Process *process);
+uint32_t vm_pop(spu_t *process);
 
 /**
 * @brief Returns the top value of the process' stack.
 */
-uint32_t vm_peek(Process *process);
+uint32_t vm_peek(spu_t *process);
 
 /**
 * Reads a byte from process memory.
 * @arg process
 * @arg address The address to read from.
 */
-uint8_t vm_read_byte(Process *process, uint32_t address);
+uint8_t vm_read_byte(spu_t *process, uint32_t address);
 
 /**
 * Writes a byte to process memory.
 * @arg process
 * @arg address The address to read from.
 */
-void vm_write_byte(Process *process, uint32_t address, uint8_t value);
+void vm_write_byte(spu_t *process, uint32_t address, uint8_t value);
 
 // The following functions need to be host-implemented.
 
@@ -180,16 +171,18 @@ void vm_assert(int assertion, const char *msg);
 /**
 * The hosts syscall implementation.
 * @param process The process that calls the syscall.
-* @param info    Additional information for the syscall. Contains arguments and results.
+* @param info    The input values of the syscall.
+* @returns       Result the SPU receives from this command.
 */
-void vm_syscall(Process *process, CommandInfo *info);
+uint32_t vm_syscall(spu_t *process, cmdinput_t *info);
 
 /**
 * The hosts hardware IO implementation.
 * @param process The process that wants to do IO.
-* @param info    Additional information for the HWIO. Contains arguments and results.
+* @param info    The input values for the hardware IO.
+* @returns       Result the SPU receives from this command.
 */
-void vm_hwio(Process *process, CommandInfo *info);
+uint32_t vm_hwio(spu_t *process, cmdinput_t *info);
 
 #if defined(__cplusplus)
 }

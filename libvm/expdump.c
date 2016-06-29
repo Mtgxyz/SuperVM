@@ -25,7 +25,7 @@
 struct PredefinedCmd
 {
 	const char *name;
-	Instruction instr;
+	instruction_t instr;
 };
 
 struct PredefinedCmd namedCommands[] =
@@ -103,12 +103,12 @@ const char *commandStrings[] =
 
 int disassembleVerbose = 0;
 
-void disassemble(Instruction *list, uint32_t count, uint32_t base, FILE *f)
+void disassemble(instruction_t *list, uint32_t count, uint32_t base, FILE *f)
 {
 	int v = disassembleVerbose;
 	for (int i = 0; i < count; i++)
 	{
-		Instruction instr = list[i];
+		instruction_t instr = list[i];
 
 		fprintf(f, "%8X:  ", base + i);
 
@@ -116,7 +116,7 @@ void disassemble(Instruction *list, uint32_t count, uint32_t base, FILE *f)
 
 		for (int j = 0; j < sizeof(namedCommands) / sizeof(struct PredefinedCmd); j++)
 		{
-			if (memcmp(&instr, &namedCommands[j].instr, sizeof(Instruction) - sizeof(uint32_t)) == 0) {
+			if (memcmp(&instr, &namedCommands[j].instr, sizeof(instruction_t) - sizeof(uint32_t)) == 0) {
 				knownInstruction = &namedCommands[j];
 				break;
 			}
@@ -210,7 +210,6 @@ int main(int argc, char **argv)
 	int headers = 0;
 	int dumpSections = 0;
 	int dumpMetas = 0;
-
 	int disassembleSections = 0;
 
 	int c;
@@ -235,6 +234,12 @@ int main(int argc, char **argv)
 			abort();
 		}
 	}
+	
+	if(!headers && !dumpSections && !dumpMetas && !disassembleSections) {
+		headers = 1;
+	}
+	
+	
 	for (int index = optind; index < argc; index++)
 	{
 		const char *fileName = argv[index];
@@ -256,9 +261,7 @@ int main(int argc, char **argv)
 		}
 		if (fileHeader.magicNumber != EXP_MAGIC)
 		{
-			fprintf(
-				stderr, "Invalid magic in %s\n",
-				fileHeader.majorVersion, fileHeader.minorVersion);
+			fprintf(stderr, "Invalid magic in %s\n", fileName);
 			continue;
 		}
 		if (fileHeader.majorVersion != 1 && fileHeader.minorVersion == 0)
@@ -305,7 +308,7 @@ int main(int argc, char **argv)
 					else
 						fprintf(stdout, "; Section '%s'@0x%08X\n", section.name, section.base);
 
-					Instruction *buffer = malloc(section.length);
+					instruction_t *buffer = malloc(section.length);
 
 					fseek(f, section.start, SEEK_SET);
 					int len = fread(buffer, 1, section.length, f);
@@ -314,7 +317,7 @@ int main(int argc, char **argv)
 
 					disassemble(
 						buffer,
-						section.length / sizeof(Instruction),
+						section.length / sizeof(instruction_t),
 						section.base,
 						stdout);
 
