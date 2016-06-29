@@ -22,6 +22,55 @@
 
 #define DEBUG_VAL(x) fprintf(stderr, #x " = %d\n", x)
 
+struct PredefinedCmd
+{
+	const char *name;
+	Instruction instr;
+};
+
+struct PredefinedCmd namedCommands[] =
+{
+	{ "nop",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "push",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "drop",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "dup",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_PEEK, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "jmp",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_JUMP } },
+	{ "jmpi",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_JUMP } },
+	{ "ret",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_COPY, 0, VM_FLAG_NO, VM_OUTPUT_JUMP } },
+	{ "load",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_ZERO, VM_CMD_LOAD, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "loadi",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_LOAD, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "store",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_POP, VM_CMD_STORE, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "storei",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_STORE, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "get",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_ZERO, VM_CMD_GET, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "geti",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_GET, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "set",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ARG, VM_INPUT_POP, VM_CMD_SET, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "seti",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_SET, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "bpget",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_BPGET, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "bpset",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_BPSET, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "spget",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_SPGET, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "spset",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_SPSET, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "cpget",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_CPGET, 1, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "add",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 0, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "sub",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 1, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "cmp",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 1, VM_FLAG_YES, VM_OUTPUT_DISCARD } },
+	{ "mul",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 2, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "div",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 3, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "mod",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 4, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "and",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 5, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "or",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 6, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "xor",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 7, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "not",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_ZERO, VM_CMD_MATH, 8, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "rol",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 9, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "ror",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 10, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "asl",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 11, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "asr",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 12, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "shl",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 13, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "shr",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_POP, VM_INPUT_POP, VM_CMD_MATH, 14, VM_FLAG_NO, VM_OUTPUT_PUSH } },
+	{ "syscall",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_SYSCALL, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+	{ "hwio",{ VM_EXEC_X, VM_EXEC_X, VM_INPUT_ZERO, VM_INPUT_ZERO, VM_CMD_HWIO, 0, VM_FLAG_NO, VM_OUTPUT_DISCARD } },
+
+};
+
 const char *commandStrings[] =
 {
 	// VM_CMD_COPY     0
@@ -52,33 +101,58 @@ const char *commandStrings[] =
 		"hwio",
 };
 
+int disassembleVerbose = 0;
+
 void disassemble(Instruction *list, uint32_t count, FILE *f)
 {
+	int v = disassembleVerbose;
 	for (int i = 0; i < count; i++)
 	{
 		Instruction instr = list[i];
 
-		fprintf(f, "\t");
+		fprintf(f, "%8X:  ", i);
 
-		fprintf(f, "%6x  ", i);
+		struct PredefinedCmd *knownInstruction = NULL;
+
+		for (int j = 0; j < sizeof(namedCommands) / sizeof(struct PredefinedCmd); j++)
+		{
+			if (memcmp(&instr, &namedCommands[j].instr, sizeof(Instruction) - sizeof(uint32_t)) == 0) {
+				knownInstruction = &namedCommands[j];
+				break;
+			}
+		}
+
+		if (knownInstruction != NULL)
+		{
+			fprintf(f, "%s", knownInstruction->name);
+			if (instr.input0 == VM_INPUT_ARG)
+			{
+				if(instr.output == VM_OUTPUT_JUMP || instr.output == VM_OUTPUT_JUMPR)
+					fprintf(f, " 0x%X", instr.argument);
+				else
+					fprintf(f, " %d", instr.argument);
+			}
+			fprintf(f, "\n");
+			continue;
+		}
 
 		switch (instr.execN)
 		{
 		case VM_EXEC_0: fprintf(f, "[ex(n)=0] "); break;
 		case VM_EXEC_1: fprintf(f, "[ex(n)=1] "); break;
-		case VM_EXEC_X: fprintf(f, "[ex(n)=x] "); break;
+		case VM_EXEC_X: if (v) fprintf(f, "[ex(n)=x] "); break;
 		}
 
 		switch (instr.execZ)
 		{
 		case VM_EXEC_0: fprintf(f, "[ex(z)=0] "); break;
 		case VM_EXEC_1: fprintf(f, "[ex(z)=1] "); break;
-		case VM_EXEC_X: fprintf(f, "[ex(z)=x] "); break;
+		case VM_EXEC_X: if (v) fprintf(f, "[ex(z)=x] "); break;
 		}
 
 		switch (instr.input0)
 		{
-		case VM_INPUT_ZERO: fprintf(f, "[i0:zero] "); break;
+		case VM_INPUT_ZERO: if (v) fprintf(f, "[i0:zero] "); break;
 		case VM_INPUT_POP: fprintf(f, "[i0:pop] "); break;
 		case VM_INPUT_PEEK: fprintf(f, "[i0:peek] "); break;
 		case VM_INPUT_ARG: fprintf(f, "[i0:arg] "); break;
@@ -86,7 +160,7 @@ void disassemble(Instruction *list, uint32_t count, FILE *f)
 
 		switch (instr.input1)
 		{
-		case VM_INPUT_ZERO: fprintf(f, "[i1:zero] "); break;
+		case VM_INPUT_ZERO: if (v) fprintf(f, "[i1:zero] "); break;
 		case VM_INPUT_POP: fprintf(f, "[i1:pop] "); break;
 		case VM_INPUT_PEEK: fprintf(f, "[i1:peek] "); break;
 		case VM_INPUT_ARG: fprintf(f, "[i1:arg] "); break;
@@ -97,17 +171,28 @@ void disassemble(Instruction *list, uint32_t count, FILE *f)
 		else
 			fprintf(f, "undefined [cmd:%d]", instr.command);
 
-		fprintf(f, " [ci:%d]", instr.cmdinfo);
+		if (instr.cmdinfo != 0)
+		{
+			fprintf(f, " [ci:%d]", instr.cmdinfo);
+		}
+
+		if (instr.argument != 0 || instr.input0 == VM_INPUT_ARG)
+		{
+			if (instr.output == VM_OUTPUT_JUMP || instr.output == VM_OUTPUT_JUMPR)
+				fprintf(f, " 0x%X", instr.argument);
+			else
+				fprintf(f, " %d", instr.argument);
+		}
 
 		switch (instr.flags)
 		{
-		case VM_FLAG_NO: fprintf(f, " [f:no]"); break;
+		case VM_FLAG_NO: if (v) fprintf(f, " [f:no]"); break;
 		case VM_FLAG_YES: fprintf(f, " [f:yes]"); break;
 		}
 
 		switch (instr.output)
 		{
-		case VM_OUTPUT_DISCARD: fprintf(f, " [r:discard]"); break;
+		case VM_OUTPUT_DISCARD: if (v) fprintf(f, " [r:discard]"); break;
 		case VM_OUTPUT_JUMP: fprintf(f, " [r:jump]"); break;
 		case VM_OUTPUT_JUMPR: fprintf(f, " [r:jumpr]"); break;
 		case VM_OUTPUT_PUSH: fprintf(f, " [r:push]"); break;
@@ -128,12 +213,13 @@ int main(int argc, char **argv)
 	int disassembleSections = 0;
 
 	int c;
-	while ((c = getopt(argc, argv, "smd")) != -1)
+	while ((c = getopt(argc, argv, "smdD")) != -1)
 	{
 		switch (c)
 		{
 		case 's': dumpSections = 1; break;
 		case 'm': dumpMetas = 1; break;
+		case 'D': disassembleVerbose = 1;
 		case 'd': disassembleSections = 1; break;
 		case '?':
 			if (optopt == 'o' || optopt == 'c' || optopt == 'd')
