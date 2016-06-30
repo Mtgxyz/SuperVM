@@ -1,14 +1,22 @@
 
 CC = gcc
 
-all: explink expdump
+all: explink expdump emulator as
 
 explink: explink.c
-	$(CC) -g $^ -o explink
+	$(CC) -g -o bin/$@ $^
 
-expdump: expdump.c
-	$(CC) -g $^ -o expdump
+expdump: expdump.c mnemonics.c
+	$(CC) -g -o bin/$@ $^
 
+emulator: emulator.c vm.c
+	$(CC) -g -o bin/$@ $^ -lSDL
+
+as:
+	make -C as
+	
 test: exp
 	./exp -o test.exp $(ARGS)
 	hexdump -C test.exp 
+
+.PHONY: as

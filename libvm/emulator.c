@@ -1,12 +1,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <SDL.h>
 #include <stdbool.h>
 #include "vm.h"
 #include "exp.h"
 
 #if defined(_MSC_VER)
+#include <SDL.h>
 #undef main
+#else
+#include <SDL/SDL.h>
 #endif
 
 bool running = true;
@@ -228,11 +230,13 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-FILE * __cdecl __iob_func(void)
-{
-	static FILE iob[3];
-	iob[0] = *stdin;
-	iob[1] = *stdout;
-	iob[2] = *stderr;
-	return iob;
-}
+/*#if defined(_MSC_VER)*/
+/*FILE * __cdecl __iob_func(void)*/
+/*{*/
+	/*static FILE iob[3];*/
+	/*iob[0] = *stdin;*/
+	/*iob[1] = *stdout;*/
+	/*iob[2] = *stderr;*/
+	/*return iob;*/
+/*}*/
+/*#endif*/
