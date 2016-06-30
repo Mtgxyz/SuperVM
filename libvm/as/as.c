@@ -233,10 +233,11 @@ int main(int argc, char **argv)
 	
 	if(listSymbols)
 	{
-		printf("Symbols:\n");
+		FILE *fExports = stdout;
+		fprintf(fExports, "SYMBOLS\n");
 		for(llist_t *it = labels; it != NULL; it = it->next)
 		{
-			printf("%s@%d\n", it->name, it->value);
+			fprintf(fExports, "\t%s\t%X\n", it->name, it->value);
 		}
 	}
 	
