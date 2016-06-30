@@ -7,7 +7,7 @@ whitespace	[ \t]
 newline     [\n]
 digit				[0-9]
 hexdigit    [0-9a-fA-F]
-intnum			{digit}+
+intnum			-?{digit}+
 hexnum			"0x"{hexdigit}+
 mnemonic    [a-zA-Z]+
 labelname   [a-zA-Z0-9_]+

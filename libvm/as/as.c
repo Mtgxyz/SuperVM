@@ -57,17 +57,23 @@ int listSymbols = 0;
 // current token
 int tok;
 
+void apply_modifier(instruction_t *i, const char *mod);
+
 void apply_modifiers(instruction_t *i)
 {
 	while(tok == TOK_MOD)
 	{
-		printf("modifier, ");
+		char *s = yytext + 1;
+		int len = strlen(s);
+		s[len - 1] = 0;
+		apply_modifier(i, s);
 		tok = yylex();
 	}
 }
 
+
 // line format:
-// TOK_LABEL? TOK_MOD* TOK_MNEMONIC TOK_MOD* ()? TOK_MOD* TOK_NEWLINE
+// TOK_LABEL? TOK_MOD* TOK_MNEMONIC TOK_MOD* (TOK_INT|TOK_HEX|TOK_CHAR|TOK_REF)? TOK_MOD* TOK_NEWLINE
 void assemble()
 {
 	uint32_t index = 0;
@@ -156,7 +162,6 @@ void assemble()
 			// Increase command index by one
 			index += 1;
 		}
-		printf("NEXT\n");
 	}
 	
 	if(listSymbols)
@@ -168,7 +173,7 @@ void assemble()
 		}
 	}
 	
-	printf("Patches:\n");
+	// printf("Patches:\n");
 	for(llist_t *it = patches; it != NULL; it = it->next)
 	{
 		uint32_t target = list_find(&labels, it->name);
@@ -177,7 +182,7 @@ void assemble()
 		fseek(output, sizeof(instruction_t) * it->value + 4, SEEK_SET);
 		fwrite(&target, 1, sizeof(uint32_t), output);
 		
-		printf("%d -> %d (%s)\n", it->value, target, it->name);
+		// printf("%d -> %d (%s)\n", it->value, target, it->name);
 	}
 }
 
@@ -238,4 +243,98 @@ int main(int argc, char **argv)
 	}
 	
 	return 0;
+}
+
+void apply_modifier(instruction_t *i, const char *mod)
+{
+	// printf("[%s]\n", mod);
+	if(strncmp("ci:", mod, 3) == 0)
+	{
+		i->cmdinfo = atoi(mod + 3);
+		return;
+	}
+
+	if(strncmp("cmd:", mod, 4) == 0)
+	{
+		fprintf(stderr, "Command specification %s not supported yet.\n");
+		exit(1);
+	}
+	
+	if(strcmp("f:yes", mod) == 0)
+	{
+		i->flags = 1;
+	}
+	else if(strcmp("f:no", mod) == 0)
+	{
+		i->flags = 0;
+	}
+	else if(strcmp("r:discard", mod) == 0)
+	{
+		i->output = VM_OUTPUT_DISCARD;
+	}
+	else if(strcmp("r:push", mod) == 0)
+	{
+		i->output = VM_OUTPUT_PUSH;
+	}
+	else if(strcmp("r:jump", mod) == 0)
+	{
+		i->output = VM_OUTPUT_JUMP;
+	}
+	else if(strcmp("r:jumpr", mod) == 0)
+	{
+		i->output = VM_OUTPUT_JUMPR;
+	}
+	else if(strcmp("i0:zero", mod) == 0)
+	{
+		i->input0 = VM_INPUT_ZERO;
+	}
+	else if(strcmp("i0:pop", mod) == 0)
+	{
+		i->input0 = VM_INPUT_POP;
+	}
+	else if(strcmp("i0:peek", mod) == 0)
+	{
+		i->input0 = VM_INPUT_PEEK;
+	}
+	else if(strcmp("i0:arg", mod) == 0)
+	{
+		i->input0 = VM_INPUT_ARG;
+	}
+	else if(strcmp("i1:zero", mod) == 0)
+	{
+		i->input1 = VM_INPUT_ZERO;
+	}
+	else if(strcmp("i1:pop", mod) == 0)
+	{
+		i->input1 = VM_INPUT_POP;
+	}
+	else if(strcmp("ex(z)=x", mod) == 0)
+	{
+		i->execZ = VM_EXEC_X;
+	}
+	else if(strcmp("ex(z)=0", mod) == 0)
+	{
+		i->execZ = VM_EXEC_0;
+	}
+	else if(strcmp("ex(z)=1", mod) == 0)
+	{
+		i->execZ = VM_EXEC_1;
+	}
+	else if(strcmp("ex(n)=x", mod) == 0)
+	{
+		i->execN = VM_EXEC_X;
+	}
+	else if(strcmp("ex(n)=0", mod) == 0)
+	{
+		i->execN = VM_EXEC_0;
+	}
+	else if(strcmp("ex(n)=1", mod) == 0)
+	{
+		i->execN = VM_EXEC_1;
+	}
+	else
+	{
+		fprintf(stderr, "Unknown modifier: [%s]\n", mod);
+		exit(1);
+	}
 }
