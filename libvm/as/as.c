@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "tokens.h"
 #include "../vm.h"
@@ -53,6 +54,7 @@ void list_free(llist_t **list)
 FILE *output;
 
 int listSymbols = 0;
+int entryPoint = 0;
 
 // current token
 int tok;
@@ -71,14 +73,25 @@ void apply_modifiers(instruction_t *i)
 	}
 }
 
+void compile_error(const char *msg, ...)
+{
+	fprintf(stderr, "test.asm:%d:", yylineno);
+	
+  va_list args;
+  va_start (args, msg);
+  vfprintf (stderr, msg, args);
+  va_end (args);
+	
+	exit(1);
+}
+
+static llist_t *labels = NULL;
+static llist_t *patches = NULL;
 
 // line format:
 // TOK_LABEL? TOK_MOD* TOK_MNEMONIC TOK_MOD* (TOK_INT|TOK_HEX|TOK_CHAR|TOK_REF)? TOK_MOD* TOK_NEWLINE
 void assemble()
 {
-	uint32_t index = 0;
-	llist_t *labels = NULL;
-	llist_t *patches = NULL;
 	while(true)
 	{
 		tok = yylex();
@@ -90,7 +103,7 @@ void assemble()
 			int len = strlen(yytext);
 			yytext[len - 1] = '\0'; // remove colon
 		
-			list_insert(&labels, yytext, index);
+			list_insert(&labels, yytext, entryPoint);
 			
 			tok = yylex();
 		}
@@ -102,7 +115,7 @@ void assemble()
 			
 			if(tok != TOK_MNEMONIC)
 			{
-				fprintf(stderr, "Expected mnemonic!\n");
+				compile_error("Expected mnemonic, got '%s' instead.", yytext);
 				exit(1);
 			}
 			
@@ -110,7 +123,7 @@ void assemble()
 			for(int i = 0; ; i++)
 			{
 				if(mnemonics[i].name == NULL) {
-					fprintf(stderr, "Invalid mnemonic: %s\n", yytext);
+					compile_error("Invalid mnemonic: '%s'", yytext);
 					exit(1);
 				}
 				else if(strcmp(mnemonics[i].name, yytext) == 0) {
@@ -140,19 +153,19 @@ void assemble()
 					{
 						// insert patch here for deferred argument modification
 						// (yytext + 1) removes the leading @
-						list_insert(&patches, yytext + 1, index);
+						list_insert(&patches, yytext + 1, entryPoint);
 						break;
 					}
 					default: 
-						fprintf(stderr, "Invalid token detected: %d\n", tok);
+						compile_error("Expected number, character or label reference, got '%s' instead.", yytext);
 						exit(1);
 				}
 				tok = yylex();
 				apply_modifiers(&current);
 			}
-			if(tok != TOK_NEWLINE)
+			if(tok != TOK_NEWLINE && tok != TOK_EOF)
 			{
-				fprintf(stderr, "Invalid token detected: %d\n", tok);
+				compile_error("Expected end of line, got '%s instead.", yytext);
 				exit(1);
 			}
 			
@@ -160,29 +173,8 @@ void assemble()
 			fwrite(&current, sizeof(instruction_t), 1, output);
 			
 			// Increase command index by one
-			index += 1;
+			entryPoint += 1;
 		}
-	}
-	
-	if(listSymbols)
-	{
-		printf("Symbols:\n");
-		for(llist_t *it = labels; it != NULL; it = it->next)
-		{
-			printf("%s@%d\n", it->name, it->value);
-		}
-	}
-	
-	// printf("Patches:\n");
-	for(llist_t *it = patches; it != NULL; it = it->next)
-	{
-		uint32_t target = list_find(&labels, it->name);
-		
-		// Seek to the target address
-		fseek(output, sizeof(instruction_t) * it->value + 4, SEEK_SET);
-		fwrite(&target, 1, sizeof(uint32_t), output);
-		
-		// printf("%d -> %d (%s)\n", it->value, target, it->name);
 	}
 }
 
@@ -191,10 +183,16 @@ int main(int argc, char **argv)
 	output = stdout;
 
 	int c;
-	while ((c = getopt(argc, argv, "o:")) != -1)
+	while ((c = getopt(argc, argv, "o:e:s")) != -1)
 	{
 		switch (c)
 		{
+		case 'e':
+			entryPoint = atoi(optarg);
+			break;
+		case 's':
+			listSymbols = 1;
+			break;
 		case 'o':
 		{			
 			FILE *f = fopen(optarg, "wb");
@@ -227,20 +225,38 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%f not found.\n", optarg);
 			abort();
 		}
-		FILE *p = yyget_in();
-		if(p != NULL && p != stdin) {
-			fclose(p);
-		}
-		yyset_in(f);
-		break;
-	}
-
-	assemble();
+		yyrestart (f);
+		assemble();
 	
-	FILE *p = yyget_in();
-	if(p != NULL && p != stdin) {
-		fclose(p);
+		fclose(f);
 	}
+	
+	if(listSymbols)
+	{
+		printf("Symbols:\n");
+		for(llist_t *it = labels; it != NULL; it = it->next)
+		{
+			printf("%s@%d\n", it->name, it->value);
+		}
+	}
+	
+	// printf("Patches:\n");
+	for(llist_t *it = patches; it != NULL; it = it->next)
+	{
+		uint32_t target = list_find(&labels, it->name);
+		
+		// Seek to the target address
+		fseek(output, sizeof(instruction_t) * it->value + 4, SEEK_SET);
+		fwrite(&target, 1, sizeof(uint32_t), output);
+		
+		// printf("%d -> %d (%s)\n", it->value, target, it->name);
+	}
+	
+	list_free(&patches);
+	list_free(&labels);
+	
+	if(output != stdout)
+		fclose(output);
 	
 	return 0;
 }

@@ -17,6 +17,8 @@
 extern int yylineno;
 extern char *yytext;
 
+void yyrestart (FILE *input_file  );
+
 /** Get the current line number.
  * 
  */
