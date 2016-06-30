@@ -28,12 +28,20 @@ int main(int argc, char **argv)
 	char const *codefileName = NULL;
 	char const *datafileName = NULL;
 	int memsize = 65536;
+	int codeStart = 0;
+	int dataStart = 0;
 	opterr = 0;
 	int c;
-	while ((c = getopt(argc, argv, "c:d:m:o:")) != -1)
+	while ((c = getopt(argc, argv, "C:D:c:d:m:o:")) != -1)
 	{
 		switch (c)
 		{
+		case 'C':
+			codeStart = atoi(optarg);
+			break;
+		case 'D':
+			dataStart = atoi(optarg);
+			break;
 		case 'm':
 			memsize = atoi(optarg);
 			if (memsize <= 0) {
@@ -97,11 +105,14 @@ int main(int argc, char **argv)
 
 	DEBUG_VAL(fileHeader.posSections);
 
-	expsection_t codeSection = { 0, 0 };
+	expsection_t codeSection = { 0, codeStart };
 	strcpy(codeSection.name, ".code");
 
-	expsection_t dataSection = { 1, 0 };
+	expsection_t dataSection = { 1, dataStart };
 	strcpy(dataSection.name, ".data");
+
+	DEBUG_VAL(codeSection.base);
+	DEBUG_VAL(dataSection.base);
 
 	if (codefileName != NULL)
 		fwrite(&codeSection, sizeof(expsection_t), 1, f);

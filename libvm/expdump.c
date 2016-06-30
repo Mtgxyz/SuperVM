@@ -125,7 +125,7 @@ void disassemble(instruction_t *list, uint32_t count, uint32_t base, FILE *f)
 		if (knownInstruction != NULL)
 		{
 			fprintf(f, "%s", knownInstruction->name);
-			if (instr.input0 == VM_INPUT_ARG)
+			if (instr.argument != 0 || instr.input0 == VM_INPUT_ARG)
 			{
 				if(instr.output == VM_OUTPUT_JUMP || instr.output == VM_OUTPUT_JUMPR)
 					fprintf(f, " 0x%X", instr.argument);
@@ -268,6 +268,7 @@ int main(int argc, char **argv)
 		{
 			fprintf(
 				stderr, "Invalid version %s: %d.%d\n",
+				fileName,
 				fileHeader.majorVersion, fileHeader.minorVersion);
 			continue;
 		}
