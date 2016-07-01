@@ -11,6 +11,7 @@
 #include "tokens.h"
 #include "../vm.h"
 #include "../mnemonics.h"
+#include "../disassembler.h"
 
 struct llist
 {
@@ -30,11 +31,14 @@ void list_insert(llist_t **list, const char *name, uint32_t value)
 	*list = item;
 }
 
+int listFound = 0;
 uint32_t list_find(llist_t **list, const char *name)
 {
+	listFound = 0;
 	for(llist_t *it = *list; it != NULL; it = it->next)
 	{
 		if(strcmp(it->name, name) == 0) {
+			listFound = 1;
 			return it->value;
 		}
 	}
@@ -52,6 +56,8 @@ void list_free(llist_t **list)
 }
 
 FILE *output;
+
+FILE *listing = NULL;
 
 int listSymbols = 0;
 int entryPoint = 0;
@@ -105,6 +111,11 @@ void assemble()
 		
 			list_insert(&labels, yytext, entryPoint);
 			
+			if(listing)
+			{
+				fprintf(listing, "%s:\n", yytext);
+			}
+			
 			tok = yylex();
 		}
 		if(tok != TOK_NEWLINE)
@@ -127,7 +138,24 @@ void assemble()
 					exit(1);
 				}
 				else if(strcmp(mnemonics[i].name, yytext) == 0) {
-					current = mnemonics[i].instr;
+					// Copy instruction here, but account for
+					// already applied modificatiors by 
+					// only copying when values still zero.
+				
+					#define COPY_IF(prop) \
+						if(!current.prop) \
+							current.prop = mnemonics[i].instr.prop;
+					COPY_IF(execZ );
+					COPY_IF(execN);
+					COPY_IF(input0);
+					COPY_IF(input1);
+					COPY_IF(command);
+					COPY_IF(cmdinfo);
+					COPY_IF(flags);
+					COPY_IF(output);
+					COPY_IF(argument);
+					#undef COPY_IF
+					// current = mnemonics[i].instr;
 					break;
 				}
 			}
@@ -136,6 +164,7 @@ void assemble()
 			
 			apply_modifiers(&current);
 			
+			int reqPatch = 0;
 			if(tok != TOK_NEWLINE)
 			{
 				switch(tok)
@@ -151,9 +180,16 @@ void assemble()
 						break;
 					case TOK_REFERENCE:
 					{
-						// insert patch here for deferred argument modification
 						// (yytext + 1) removes the leading @
-						list_insert(&patches, yytext + 1, entryPoint);
+						// check if we already had a label with this name
+						uint32_t target = list_find(&labels, yytext + 1);
+						if(listFound)
+							current.argument = target;
+						else {
+							// insert patch here for deferred argument modification
+							list_insert(&patches, yytext + 1, entryPoint);
+							reqPatch = 1;
+						}
 						break;
 					}
 					default: 
@@ -172,6 +208,13 @@ void assemble()
 			// write command:
 			fwrite(&current, sizeof(instruction_t), 1, output);
 			
+			if(listing)
+			{
+				if(reqPatch) fprintf(listing, "\t; Requires patch:\n");
+				fprintf(listing, "\t", yytext);
+				disassemble(&current, 1, entryPoint, listing);
+			}
+			
 			// Increase command index by one
 			entryPoint += 1;
 		}
@@ -180,10 +223,14 @@ void assemble()
 
 int main(int argc, char **argv)
 {
-	output = stdout;
+	// configure disassembler:
+	disasmOptions.outputAddresses = false;
 
+	output = NULL;
+	listing = NULL;
+	
 	int c;
-	while ((c = getopt(argc, argv, "o:e:s")) != -1)
+	while ((c = getopt(argc, argv, "o:e:sl:L")) != -1)
 	{
 		switch (c)
 		{
@@ -193,17 +240,32 @@ int main(int argc, char **argv)
 		case 's':
 			listSymbols = 1;
 			break;
+		case 'L':
+			listing = stdout;
+			break;
+		case 'l':
+		{
+			if(listing != NULL) {
+				fprintf(stderr, "-L or -l can only be used mutual exclusive and only once.\n");
+				exit(1);
+			}
+			listing = fopen(optarg, "w");
+			if(listing == NULL) {
+				fprintf(stderr, "Could not open %s.\n");
+				exit(1);
+			}
+		}
 		case 'o':
-		{			
-			FILE *f = fopen(optarg, "wb");
-			if(f == NULL) {
-				fprintf(stderr, "%f not found.\n", optarg);
-				abort();
+		{
+			if(output != NULL) {
+				fprintf(stderr, "-o can be used only once.\n");
+				exit(1);
 			}
-			if(output != stdout) {
-				fclose(output);
+			output = fopen(optarg, "wb");
+			if(output == NULL) {
+				fprintf(stderr, "%s not found.\n", optarg);
+				exit(1);
 			}
-			output = f;
 			break;
 		}
 		case '?':
@@ -218,6 +280,13 @@ int main(int argc, char **argv)
 			abort();
 		}
 	}
+	
+	if(output == NULL)
+	{
+		fprintf(stderr, "An output file must be given by -o fileName\n");
+		exit(1);
+	}
+	
 	for (int index = optind; index < argc; index++)
 	{
 		FILE *f = fopen(argv[index], "r");
@@ -245,6 +314,11 @@ int main(int argc, char **argv)
 	for(llist_t *it = patches; it != NULL; it = it->next)
 	{
 		uint32_t target = list_find(&labels, it->name);
+		if(listFound == 0)
+		{
+			fprintf(stderr, "Could not find label %s.\n", it->name);
+			exit(1);
+		}
 		
 		// Seek to the target address
 		fseek(output, sizeof(instruction_t) * it->value + 4, SEEK_SET);

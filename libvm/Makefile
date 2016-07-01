@@ -6,7 +6,7 @@ all: explink expdump emulator as
 explink: explink.c
 	$(CC) -g -o bin/$@ $^
 
-expdump: expdump.c mnemonics.c
+expdump: expdump.c mnemonics.c disassembler.c
 	$(CC) -g -o bin/$@ $^
 
 emulator: emulator.c vm.c
