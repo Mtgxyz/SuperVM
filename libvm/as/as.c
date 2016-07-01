@@ -1,17 +1,22 @@
 
+#include "tokens.h"
+#include "../vm.h"
+#include "../mnemonics.h"
+#include "../disassembler.h"
+
 #include <stdbool.h>
 #include <stdio.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
 
-#include "tokens.h"
-#include "../vm.h"
-#include "../mnemonics.h"
-#include "../disassembler.h"
+#if defined(_MSC_VER)
+#include "../getopt.h"
+#else
+#include <getopt.h>
+#endif
 
 struct llist
 {
@@ -251,7 +256,7 @@ int main(int argc, char **argv)
 			}
 			listing = fopen(optarg, "w");
 			if(listing == NULL) {
-				fprintf(stderr, "Could not open %s.\n");
+				fprintf(stderr, "Could not open %s.\n", optarg);
 				exit(1);
 			}
 		}
@@ -347,7 +352,7 @@ void apply_modifier(instruction_t *i, const char *mod)
 
 	if(strncmp("cmd:", mod, 4) == 0)
 	{
-		fprintf(stderr, "Command specification %s not supported yet.\n");
+		fprintf(stderr, "Command specification %s not supported yet.\n", mod);
 		exit(1);
 	}
 	

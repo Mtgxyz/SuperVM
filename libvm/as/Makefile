@@ -1,8 +1,3 @@
-
-
-
-
-
 all: as
 
 as: as.c tokens.c ../mnemonics.c ../disassembler.c
