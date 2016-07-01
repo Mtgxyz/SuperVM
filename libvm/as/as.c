@@ -165,7 +165,7 @@ void assemble()
 			apply_modifiers(&current);
 			
 			int reqPatch = 0;
-			if(tok != TOK_NEWLINE)
+			if(tok != TOK_NEWLINE && tok != TOK_EOF)
 			{
 				switch(tok)
 				{
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
 	{
 		FILE *f = fopen(argv[index], "r");
 		if(f == NULL) {
-			fprintf(stderr, "%f not found.\n", optarg);
+			fprintf(stderr, "%s not found.\n", argv[index]);
 			abort();
 		}
 		yyrestart (f);
