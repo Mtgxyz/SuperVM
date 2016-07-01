@@ -9,6 +9,7 @@ digit				[0-9]
 hexdigit    [0-9a-fA-F]
 intnum			-?{digit}+
 hexnum			"0x"{hexdigit}+
+binnum      "0b"[01]+
 mnemonic    [a-zA-Z]+
 labelname   [a-zA-Z0-9_]+
 label       {labelname}":"
@@ -19,6 +20,7 @@ ref         @{labelname}
 {comment}				;
 {hexnum} 				RETURN(TOK_HEX,);
 {intnum} 				RETURN(TOK_INT,);
+{binnum} 				RETURN(TOK_BIN,);
 {whitespace}		;
 {mnemonic}      RETURN(TOK_MNEMONIC,);
 {label}         RETURN(TOK_LABEL,); 

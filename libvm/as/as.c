@@ -180,6 +180,9 @@ void assemble()
 					case TOK_HEX:
 						current.argument = (uint32_t)strtol(yytext, NULL, 16);
 						break;
+					case TOK_BIN:
+						current.argument = (uint32_t)strtol(yytext + 2, NULL, 2);
+						break;
 					case TOK_CHAR:
 						current.argument = (uint32_t)yytext[1];
 						break;

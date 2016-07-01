@@ -12,6 +12,7 @@
 #define TOK_NEWLINE   6
 #define TOK_CHAR      7
 #define TOK_REFERENCE 8
+#define TOK_BIN       9
 
 
 extern int yylineno;
