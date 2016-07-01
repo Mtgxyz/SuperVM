@@ -3,6 +3,8 @@ CC = gcc
 
 all: explink expdump emulator as
 
+.PHONY: as clean run
+
 explink: explink.c
 	$(CC) -g -o bin/$@ $^
 
@@ -19,4 +21,14 @@ test: exp
 	./exp -o test.exp $(ARGS)
 	hexdump -C test.exp 
 
-.PHONY: as
+run: test.exp
+	./bin/emulator -d $^
+	
+%.exp: %.bin
+	./bin/explink -o $@ -c $^
+
+%.bin: %.asm
+	./bin/as -o $@ -L $^
+
+clean:
+	rm *.bin

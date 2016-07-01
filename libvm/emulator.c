@@ -1,8 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stdbool.h>
 #include "vm.h"
 #include "exp.h"
+
+#include <stdbool.h>
+#include <getopt.h>
 
 #if defined(_MSC_VER)
 #include <SDL.h>
@@ -12,6 +14,8 @@
 #endif
 
 bool running = true;
+bool debugMode = false;
+bool visualMode = false;
 
 /**
 * An assertion the VM does.
@@ -54,14 +58,13 @@ spu_t mainCore;
 void dump_vm()
 {
 	printf(
-		"%8X %3d %3d %1X [",
+		"cp=%8X bp=%3d f=%1X [",
 		mainCore.codePointer,
-		mainCore.stackPointer,
 		mainCore.basePointer,
 		mainCore.flags
 	);
 
-	for (int i = 1; i < mainCore.stackPointer; i++)
+	for (int i = 0; i < mainCore.stackPointer; i++)
 	{
 		printf(" %d", mainCore.stack[i]);
 	}
@@ -73,7 +76,7 @@ void update_vm()
 {
 	vm_step_process(&mainCore);
 
-	// dump_vm();
+	if(debugMode) dump_vm();
 }
 
 void update_input(SDL_Event *ev)
@@ -82,6 +85,10 @@ void update_input(SDL_Event *ev)
 	{
 	case SDL_QUIT: 
 		running = false;
+		break;
+	case SDL_KEYDOWN:
+		if(ev->key.keysym.sym == SDLK_ESCAPE)
+			running = false;
 		break;
 	}
 }
@@ -157,29 +164,16 @@ bool load_exp(const char *fileName)
 	return true;
 }
 
-int main(int argc, char **argv)
+void run_visual_mode()
 {
-	// Required before ANY virtual machine memory operations...
-	initialize_vm();
-
-	// Load the EXP file
-	if (argc > 1)
-	{
-		if (!load_exp(argv[1])) {
-			return 1;
-		}
-	}
-
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		return 1;
+		exit(1);
 	}
 	atexit(SDL_Quit);
 
 	SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_DOUBLEBUF);
 	SDL_WM_SetCaption("DasOS Virtual Platform", NULL);
-
-	dump_vm();
-
+	
 	SDL_Event ev;
 	while (running)
 	{
@@ -226,17 +220,61 @@ int main(int argc, char **argv)
 
 		SDL_Delay(32);
 	}
+}
+
+void run_text_mode()
+{
+	while (running)
+	{
+		//TODO: Insert some kind of text events.
+		update_vm();
+	}
+}
+
+int main(int argc, char **argv)
+{
+	// Required before ANY virtual machine memory operations...
+	initialize_vm();
+
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, "dV")) != -1)
+	{
+		switch (c)
+		{
+		case 'd':
+			debugMode = 1;
+			break;
+		case 'V':
+			visualMode = 1;
+			break;
+		case '?':
+			if (optopt == 'o' || optopt == 'c' || optopt == 'd')
+				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+			else if (isprint(optopt))
+				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+			else
+				fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+			return 1;
+		default:
+			abort();
+		}
+	}
+	for (int index = optind; index < argc; index++)
+	{
+		fprintf(stdout, "Loading %s...\n", argv[index]);
+		if(load_exp(argv[index]) == 0) {
+			fprintf(stderr, "%s not found.\n", argv[index]);
+			exit(1);
+		}
+	}
+	
+	if(debugMode) dump_vm();
+	
+	if(visualMode)
+		run_visual_mode();
+	else
+		run_text_mode();
 	
 	return 0;
 }
-
-/*#if defined(_MSC_VER)*/
-/*FILE * __cdecl __iob_func(void)*/
-/*{*/
-	/*static FILE iob[3];*/
-	/*iob[0] = *stdin;*/
-	/*iob[1] = *stdout;*/
-	/*iob[2] = *stderr;*/
-	/*return iob;*/
-/*}*/
-/*#endif*/
