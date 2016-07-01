@@ -72,19 +72,27 @@ int main(int argc, char **argv)
 	for (int index = optind; index < argc; index++)
 		printf("Non-option argument %s\n", argv[index]);
 
+	///////////////////////////////////////////////////////////////////////////////
+
+	// fprintf(stderr, "Out:  %s\n", outfileName);
+	// fprintf(stderr, "Code: %s\n", codefileName);
+	// fprintf(stderr, "Data: %s\n", datafileName);
+
+  if(!codefileName && !datafileName)
+  {
+    fprintf(stderr, "No input files.\n");
+    exit(1);
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////
+    
 	FILE *f = fopen(outfileName, "wb");
 	if (f == NULL)
 	{
 		fprintf(stderr, "Could not open file %s\n", outfileName);
 		return 1;
 	}
-
-	///////////////////////////////////////////////////////////////////////////////
-
-	fprintf(stderr, "Out:  %s\n", outfileName);
-	fprintf(stderr, "Code: %s\n", codefileName);
-	fprintf(stderr, "Data: %s\n", datafileName);
-
+  
 	///////////////////////////////////////////////////////////////////////////////
 
 	int numSections = 0;

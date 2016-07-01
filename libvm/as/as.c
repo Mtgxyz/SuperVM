@@ -286,12 +286,17 @@ int main(int argc, char **argv)
 		}
 	}
 	
+  if(optind >= argc) {
+    fprintf(stderr, "No input files.\n");
+    exit(1);
+  }
+	
 	if(output == NULL)
 	{
 		fprintf(stderr, "An output file must be given by -o fileName\n");
 		exit(1);
 	}
-	
+  
 	for (int index = optind; index < argc; index++)
 	{
 		FILE *f = fopen(argv[index], "r");
