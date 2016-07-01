@@ -16,7 +16,7 @@ emulator: emulator.c vm.c
 	$(CC) -g -o bin/$@ $^ -lSDL $(CFLAGS)
 
 as:
-	make -C as
+	$(MAKE) -C as
 	
 test: exp
 	./exp -o test.exp $(ARGS)
