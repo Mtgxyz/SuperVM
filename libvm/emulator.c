@@ -19,6 +19,9 @@ bool instaquit = false;
 bool debugMode = false;
 bool visualMode = false;
 
+void swap_buffers();
+SDL_Surface *screen = NULL;
+
 /**
 * An assertion the VM does.
 * @param assertion If zero, the assertion failed.
@@ -52,6 +55,10 @@ uint32_t vm_syscall(spu_t *process, cmdinput_t *info)
 */
 uint32_t vm_hwio(spu_t *process, cmdinput_t *info)
 {
+  switch(info->info)
+  {
+    case 1: swap_buffers(); break;
+  }
 	return 0;
 }
 
@@ -167,6 +174,9 @@ bool load_exp(const char *fileName)
 	return true;
 }
 
+int executionsPerSimulationStep = 50;
+bool autoSwapBuffers = false;
+
 void run_visual_mode()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -174,7 +184,7 @@ void run_visual_mode()
 	}
 	atexit(SDL_Quit);
 
-	SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_DOUBLEBUF);
 	SDL_WM_SetCaption("DasOS Virtual Platform", NULL);
 	
 	SDL_Event ev;
@@ -188,26 +198,20 @@ void run_visual_mode()
 		uint32_t start = SDL_GetTicks();
 
 		do {
-			for (int i = 0; i < 50 && running; i++)
+			for (int i = 0; i < executionsPerSimulationStep && running; i++)
 			{
 				update_vm();
 			}
 		} while (running && (SDL_GetTicks() - start) <= 32);
 
-		{ // copy screen
-			SDL_LockSurface(screen);
-			memcpy(
-				screen->pixels,
-				(uint8_t*)mainCore.memory + 4096,
-				screen->h * screen->pitch);
-			SDL_UnlockSurface(screen);
-		}
-
-		SDL_Flip(screen);
+    if(autoSwapBuffers) swap_buffers();
 	}
 
   if(instaquit)
     return;
+  
+  // Draw the current VRAM state
+  swap_buffers();
   
 	SDL_WM_SetCaption("DasOS Virtual Platform - STOPPED", NULL);
 
@@ -228,6 +232,20 @@ void run_visual_mode()
 	}
 }
 
+void swap_buffers()
+{
+  if(screen == NULL)
+    return;
+  SDL_LockSurface(screen);
+  memcpy(
+    screen->pixels,
+    (uint8_t*)mainCore.memory + 4096,
+    screen->h * screen->pitch);
+  SDL_UnlockSurface(screen);
+  
+  SDL_Flip(screen);
+}
+
 void run_text_mode()
 {
 	while (running)
@@ -244,7 +262,7 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 	int c;
-	while ((c = getopt(argc, argv, "dV")) != -1)
+	while ((c = getopt(argc, argv, "dVs:R")) != -1)
 	{
 		switch (c)
 		{
@@ -254,6 +272,14 @@ int main(int argc, char **argv)
 		case 'V':
 			visualMode = 1;
 			break;
+    case 'R':
+      autoSwapBuffers = true;
+      break;
+    case 's':
+      executionsPerSimulationStep = atoi(optarg);
+      if(executionsPerSimulationStep <= 0)
+        executionsPerSimulationStep = 50;
+      break;
 		case '?':
 			if (optopt == 'o' || optopt == 'c' || optopt == 'd')
 				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
@@ -266,6 +292,12 @@ int main(int argc, char **argv)
 			abort();
 		}
 	}
+  
+  if(optind >= argc) {
+    fprintf(stderr, "No initial RAM-file.\n");
+    exit(1);
+  }
+  
 	for (int index = optind; index < argc; index++)
 	{
 		fprintf(stdout, "Loading %s...\n", argv[index]);

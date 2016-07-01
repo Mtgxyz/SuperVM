@@ -2,12 +2,17 @@
 ; Simple memory transform-and-copy program
 ;
 _start:
-	push 0xFFFF00
+	
+  push 0xFFFF00
 	cpget
 	jmp @cls
-	push 0x00FFFF
+	hwio [ci:1] ; refresh screen
+  
+  push 0x00FFFF
 	cpget
 	jmp @cls
+	hwio [ci:1] ; refresh screen
+  
 	jmp @_start
 	syscall
 
