@@ -3,6 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#define popcnt __popcnt
+#else
+#define popcnt __builtin_popcount
+#endif
+
 struct disassembler_options disasmOptions =
 {
 	false,
@@ -62,7 +69,7 @@ void disassemble(instruction_t *list, uint32_t count, uint32_t base, FILE *f)
 			if(mnemonics[j].instr.command != instr.command)
 				continue;
 			int thatValue = instructionValue(&mnemonics[j].instr);
-			int dist = __builtin_popcount(thisValue ^ thatValue);
+			int dist = popcnt(thisValue ^ thatValue);
 			// if (memcmp(&instr, &mnemonics[j].instr, sizeof(instruction_t) - sizeof(uint32_t)) == 0) {
 			if(dist < maxDistance) {
 				maxDistance = dist;

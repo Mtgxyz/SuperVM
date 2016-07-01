@@ -4,16 +4,18 @@
 #include "exp.h"
 
 #include <stdbool.h>
-#include <getopt.h>
 
 #if defined(_MSC_VER)
 #include <SDL.h>
+#include "getopt.h"
 #undef main
 #else
 #include <SDL/SDL.h>
+#include <getopt.h>
 #endif
 
 bool running = true;
+bool instaquit = false;
 bool debugMode = false;
 bool visualMode = false;
 
@@ -84,6 +86,7 @@ void update_input(SDL_Event *ev)
 	switch (ev->type)
 	{
 	case SDL_QUIT: 
+    instaquit = true;
 		running = false;
 		break;
 	case SDL_KEYDOWN:
@@ -203,6 +206,9 @@ void run_visual_mode()
 		SDL_Flip(screen);
 	}
 
+  if(instaquit)
+    return;
+  
 	SDL_WM_SetCaption("DasOS Virtual Platform - STOPPED", NULL);
 
 	running = true;
