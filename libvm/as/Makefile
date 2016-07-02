@@ -1,6 +1,6 @@
-all: as
+all: svmas
 
-as: as.c tokens.c ../mnemonics.c ../disassembler.c
+svmas: as.c tokens.c ../mnemonics.c ../disassembler.c
 	gcc -g -o ../bin/$@ $^
 
 tokens.c: tokens.y

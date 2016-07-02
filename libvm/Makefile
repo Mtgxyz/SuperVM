@@ -2,11 +2,11 @@
 CC = gcc
 CFLAGS=-O3
 
-all: explink expdump emulator as
+all: svmln expdump emulator svmas
 
 .PHONY: as clean run
 
-explink: explink.c
+svmln: svmln.c
 	$(CC) -g -o bin/$@ $^ $(CFLAGS)
 
 expdump: expdump.c mnemonics.c disassembler.c
@@ -15,9 +15,9 @@ expdump: expdump.c mnemonics.c disassembler.c
 emulator: emulator.c vm.c
 	$(CC) -g -o bin/$@ $^ -lSDL $(CFLAGS)
 
-as:
+svmas:
 	$(MAKE) -C as
-	
+
 test: exp
 	./exp -o test.exp $(ARGS)
 	hexdump -C test.exp 
