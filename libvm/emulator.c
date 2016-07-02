@@ -106,8 +106,8 @@ void update_input(SDL_Event *ev)
 void initialize_vm()
 {
 	// Initialize memory
-	mainCore.memoryBase = 0x00; // Linear memory, start at 0x00
-	mainCore.memorySize = 0x4000000; // 64 MB;
+  mainCore.memoryBase = 0x00; // Linear memory, start at 0x00
+  mainCore.memorySize = 0x4000000; // 64 MB;
 	mainCore.memory = malloc(mainCore.memorySize);
 
 	// Initialize code execution
